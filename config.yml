@@ -1,0 +1,75 @@
+packages:
+  ADF:
+    boilerplate: |+
+      TITLE {{ molecules[0].title }}
+
+      CHARGE {{ molecules[0].charge }}  {{ molecules[0].spin }}
+
+      Number of atoms
+       {{ molecules[0].atoms|count }}
+
+      ATOMS Cartesian
+      {{ molecules[0].write("simplexyz") }}
+      End
+
+      Basis
+      End
+
+      Geometry
+      End
+
+
+  GAMESS:
+    boilerplate: |+
+      {{ molecules[0].write('gamin') }}
+  GAMESSUK:
+    boilerplate: |+
+      {{ molecules[0].write('gukin') }}
+  # Gaussian:
+    # boilerplate: |+
+      # {{ molecules[0].write('gzmat') }}
+  Gaussian:
+    boilerplate: |+
+      #Put Keywords Here, check Charge and Multiplicity.
+
+       {{ molecules[0].title }}
+
+      {{ molecules[0].charge }}  {{ molecules[0].spin }}
+      {{ molecules[0].write("simplexyz") }}
+
+  Jaguar:
+    boilerplate: |+
+      {{ molecules[0].write('jin') }}
+  Molpro:
+    boilerplate: |+
+      {{ molecules[0].write('mp') }}
+  # MOPAC:
+    # boilerplate: |+
+      # {{ molecules[0].write('mopin') }}
+  MOPAC:
+    boilerplate: |+
+      CHARGE={{ molecules[0].charge }} MS={{ (molecules[0].spin - 1)/2 }}
+      {{ molecules[0].title }}
+
+      {{ molecules[0].write("simplemop") }}
+
+  MPQC:
+    boilerplate: |+
+      {{ molecules[0].write('mpqcin') }}
+  NWChem:
+    boilerplate: |+
+      {{ molecules[0].write('nw') }}
+  ORCA:
+    boilerplate: |+
+      # {{ molecules[0].title }}
+      ! Opt
+
+      * xyz {{ molecules[0].charge }} {{ molecules[0].spin }}
+      {{ molecules[0].write("simplexyz") }}
+      *
+  QChem:
+    boilerplate: |+
+      {{ molecules[0].write('qcin') }}
+  ZINDO:
+    boilerplate: |+
+      {{ molecules[0].write('zin') }}
