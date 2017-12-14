@@ -1,0 +1,7 @@
+#Put Keywords Here, check Charge and Multiplicity.
+
+ {{ molecules[0].title }}
+
+{{ molecules[0].charge }}  {{ molecules[0].spin }}
+{{ molecules[0].write("simplexyz") }}
+

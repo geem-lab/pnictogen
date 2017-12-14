@@ -1,0 +1,6 @@
+# {{ molecules[0].title }}
+! Opt
+
+* xyz {{ molecules[0].charge }} {{ molecules[0].spin }}
+{{ molecules[0].write("simplexyz") }}
+*
