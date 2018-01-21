@@ -1,29 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-from glob import glob
+from glob import iglob
+
 from pnictogen import argparser, main
 
-example_templates = glob(os.path.join(os.path.dirname(__file__),
-                                      "../examples/templates/*"))
-example_xyz_files = glob(os.path.join(os.path.dirname(__file__),
-                                      "../examples/*.xyz"))
+# Only testing xyz files because I trust Open Babel
+example_xyz_files = iglob("../examples/*.xyz")
+example_templates = iglob("../examples/templates/*")
 
 
 def test_argparser():
-    argv = ["my_template.GAMESS.inp", "one.xyz", "two.pdb", "three.mop"]
-
-    parser = argparser()
-    parser.parse_args(argv)
-
-
-def test_main_for_template_generation():
     for template in example_templates:
-        main([template, "-g"])
+        argv = [template] + list(example_xyz_files)
+
+        parser = argparser()
+        parser.parse_args(argv)
 
 
-def test_main_with_xyz_files():
+def test_main():
+    for template in example_templates:
+        main(["-g", template])
+
     for template in example_templates:
         # One at a time
         for xyz_file in example_xyz_files:
@@ -31,3 +29,12 @@ def test_main_with_xyz_files():
 
         # All at once
         main([template] + list(example_xyz_files))
+
+
+# Tests dedicated pnictogen.render_template and boilerplate templates can be
+# found in test_boilerplates.py
+
+# TODO: create hello world template in a temporary file to test
+# render_template() without any molecule.
+# def test_render_templates():
+#     pass

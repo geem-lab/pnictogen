@@ -1,12 +1,12 @@
 TITLE {{ molecules[0].title }}
 
-CHARGE {{ molecules[0].charge }}  {{ molecules[0].spin }}
+CHARGE {{ molecules[0].charge }}  {{ molecules[0].spin - 1 }}
 
 Number of atoms
  {{ molecules[0].atoms|count }}
 
 ATOMS Cartesian
-{{ molecules[0].write("simplexyz") }}
+{{ coords(molecules[0], "xyz") }}
 End
 
 Basis
@@ -14,5 +14,6 @@ End
 
 Geometry
 End
+
 
 
