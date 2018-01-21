@@ -1,5 +1,5 @@
 CHARGE={{ molecules[0].charge }} MS={{ (molecules[0].spin - 1)/2 }}
 {{ molecules[0].title }}
 
-{{ molecules[0].write("simplemop") }}
+{{ coords(molecules[0], "mop") }}
 

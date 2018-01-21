@@ -1,0 +1,9 @@
+# {{ molecules[0].title }}
+
+molecule {
+{{ molecules[0].charge }} {{ molecules[0].spin }}
+{{ coords(molecules[0], "xyz") }}
+units angstrom
+}
+
+optimize('scf')

@@ -1,15 +1,16 @@
 packages:
+  # TODO: add DALTON (not available through Open Babel)
   ADF:
     boilerplate: |+
       TITLE {{ molecules[0].title }}
 
-      CHARGE {{ molecules[0].charge }}  {{ molecules[0].spin }}
+      CHARGE {{ molecules[0].charge }}  {{ molecules[0].spin - 1 }}
 
       Number of atoms
        {{ molecules[0].atoms|count }}
 
       ATOMS Cartesian
-      {{ molecules[0].write("simplexyz") }}
+      {{ coords(molecules[0], "xyz") }}
       End
 
       Basis
@@ -35,7 +36,7 @@ packages:
        {{ molecules[0].title }}
 
       {{ molecules[0].charge }}  {{ molecules[0].spin }}
-      {{ molecules[0].write("simplexyz") }}
+      {{ coords(molecules[0], "xyz") }}
 
   Jaguar:
     boilerplate: |+
@@ -51,7 +52,7 @@ packages:
       CHARGE={{ molecules[0].charge }} MS={{ (molecules[0].spin - 1)/2 }}
       {{ molecules[0].title }}
 
-      {{ molecules[0].write("simplemop") }}
+      {{ coords(molecules[0], "mop") }}
 
   MPQC:
     boilerplate: |+
@@ -65,8 +66,20 @@ packages:
       ! Opt
 
       * xyz {{ molecules[0].charge }} {{ molecules[0].spin }}
-      {{ molecules[0].write("simplexyz") }}
+      {{ coords(molecules[0], "xyz") }}
       *
+
+  Psi:
+    boilerplate: |+
+      # {{ molecules[0].title }}
+
+      molecule {
+      {{ molecules[0].charge }} {{ molecules[0].spin }}
+      {{ coords(molecules[0], "xyz") }}
+      units angstrom
+      }
+
+      optimize('scf')
   QChem:
     boilerplate: |+
       {{ molecules[0].write('qcin') }}
