@@ -4,6 +4,7 @@
 import os
 import sys
 import yaml
+import parse
 import argparse
 import pkg_resources
 from jinja2 import Environment, FileSystemLoader
@@ -108,9 +109,18 @@ def main(argv=sys.argv[1:]):
             name, descriptor_extension = os.path.splitext(descriptor)
 
             # TODO: try cclib before Open Babel
-            # TODO: try to use data in titles (e.g. charge/spin)
             molecules = list(pybel.readfile(descriptor_extension[1:],
                                             descriptor))
+
+            pattern = parse.compile("{key:S}={value:S}")
+            for molecule in molecules:
+                for result in pattern.findall(molecule.title):
+                    if result["key"] == "charge":
+                        molecule.OBMol.SetTotalCharge(int(result["value"]))
+                    elif result["key"] == "spin":
+                        molecule.OBMol.SetTotalSpinMultiplicity(
+                            int(result["value"]))
+
             # TODO: add some keywords from command-line to context (like
             # "-k charge=-1" or from a yaml file)
             raw_rendered = render_template(args.template_name,
