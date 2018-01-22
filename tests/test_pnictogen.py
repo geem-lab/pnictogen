@@ -45,13 +45,12 @@ def test_conformers():
 #     pass
 
 
-context = {
-    "molecules": list(pybel.readfile("xyz", "examples/water.xyz"))
-}
-context.update(available_helpers)
-
-
 def test_render_boilerplates():
+    context = {
+        "molecules": list(pybel.readfile("xyz", "examples/water.xyz"))
+    }
+    context.update(available_helpers)
+
     main(["-g", "examples/boilerplates/ADF.in"])
     assert_equals(render_template("examples/boilerplates/ADF.in", **context),
                   context["molecules"][0].write("adf"))
@@ -144,3 +143,19 @@ optimize('scf')""")
     assert_equals(render_template("examples/boilerplates/ZINDO.input",
                                   **context),
                   context["molecules"][0].write("zin"))
+
+
+def test_keywords_in_title():
+    main(["-g", "examples/boilerplates/Gaussian.gjf"])
+    main(["examples/boilerplates/Gaussian.gjf", "examples/hydroxide.xyz"])
+
+    assert_equals(open("examples/hydroxide.gjf").read(),
+                  """#Put Keywords Here, check Charge and Multiplicity.
+
+ This guy has charge=-1 but its multiplicity spin=2 is incorrect
+
+-1  2
+O          0.05840        0.05840        0.00000
+H          1.00961       -0.06802        0.00000
+
+""")
