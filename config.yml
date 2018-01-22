@@ -20,6 +20,7 @@ packages:
       End
 
 
+
   GAMESS:
     boilerplate: |+
       {{ molecules[0].write('gamin') }}
@@ -37,6 +38,7 @@ packages:
 
       {{ molecules[0].charge }}  {{ molecules[0].spin }}
       {{ coords(molecules[0], "xyz") }}
+
 
   Jaguar:
     boilerplate: |+

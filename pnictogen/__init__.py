@@ -83,9 +83,9 @@ def main(argv=sys.argv[1:]):
     following should work:
 
     >>> import pnictogen
-    >>> pnictogen.main(["-g", "examples/templates/ORCA.inp"])
-    examples/templates/ORCA.inp written
-    >>> pnictogen.main(["examples/templates/ORCA.inp", "examples/co.xyz",
+    >>> pnictogen.main(["-g", "examples/boilerplates/ORCA.inp"])
+    examples/boilerplates/ORCA.inp written
+    >>> pnictogen.main(["examples/boilerplates/ORCA.inp", "examples/co.xyz",
     ...                 "examples/water.xyz"])
     examples/co.inp written
     examples/water.inp written
@@ -106,7 +106,6 @@ def main(argv=sys.argv[1:]):
     else:
         for descriptor in args.descriptors:
             name, descriptor_extension = os.path.splitext(descriptor)
-            path = "{:s}.{:s}".format(name, template_extension)
 
             # TODO: try cclib before Open Babel
             # TODO: try to use data in titles (e.g. charge/spin)
@@ -114,12 +113,25 @@ def main(argv=sys.argv[1:]):
                                             descriptor))
             # TODO: add some keywords from command-line to context (like
             # "-k charge=-1" or from a yaml file)
-            rendered = render_template(args.template_name, molecules=molecules,
-                                       globals=available_helpers)
+            raw_rendered = render_template(args.template_name,
+                                           molecules=molecules,
+                                           globals=available_helpers)
 
-            with open(path, "w") as stream:
-                stream.write(rendered)
-            print("{:s} written".format(path))
+            flag = None
+            raw_rendered = raw_rendered.split('--@')
+            for rendered in raw_rendered:
+                if flag is None:
+                    flag = ""
+                else:
+                    flag, rendered = rendered.split("\n", 1)
+                    flag = "_{:s}".format(flag)
+
+                if rendered.strip():
+                    path = "{:s}{:s}.{:s}".format(name, flag,
+                                                  template_extension)
+                    with open(path, "w") as stream:
+                        stream.write(rendered)
+                    print("{:s} written".format(path))
 
 
 def render_template(template_name, **context):
@@ -144,10 +156,12 @@ def render_template(template_name, **context):
 
     Examples
     --------
+    >>> main(["-g", "examples/boilerplates/QChem.in"])
+    examples/boilerplates/QChem.in written
     >>> context = {
     ...     "molecules": list(pybel.readfile("xyz", "examples/water.xyz"))
     ... }
-    >>> print(render_template("examples/templates/QChem.in", **context))
+    >>> print(render_template("examples/boilerplates/QChem.in", **context))
     $comment
     PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
     $end
