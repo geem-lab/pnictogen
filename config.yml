@@ -10,7 +10,7 @@ packages:
        {{ molecules[0].atoms|count }}
 
       ATOMS Cartesian
-      {{ coords(molecules[0], "xyz") }}
+      {{ xyz(molecules[0]) }}
       End
 
       Basis
@@ -37,7 +37,7 @@ packages:
        {{ molecules[0].title }}
 
       {{ molecules[0].charge }}  {{ molecules[0].spin }}
-      {{ coords(molecules[0], "xyz") }}
+      {{ xyz(molecules[0]) }}
 
 
   Jaguar:
@@ -54,7 +54,7 @@ packages:
       CHARGE={{ molecules[0].charge }} MS={{ (molecules[0].spin - 1)/2 }}
       {{ molecules[0].title }}
 
-      {{ coords(molecules[0], "mop") }}
+      {{ xyz(molecules[0], style="MOPAC") }}
 
   MPQC:
     boilerplate: |+
@@ -68,7 +68,7 @@ packages:
       ! Opt
 
       * xyz {{ molecules[0].charge }} {{ molecules[0].spin }}
-      {{ coords(molecules[0], "xyz") }}
+      {{ xyz(molecules[0]) }}
       *
 
   Psi:
@@ -77,7 +77,7 @@ packages:
 
       molecule {
       {{ molecules[0].charge }} {{ molecules[0].spin }}
-      {{ coords(molecules[0], "xyz") }}
+      {{ xyz(molecules[0]) }}
       units angstrom
       }
 

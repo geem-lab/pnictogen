@@ -12,7 +12,7 @@ It is based on Jinja2_, a modern and friendly templating language for Python:
     ! Opt
 
     * xyz {{ molecules[0].charge }} {{ molecules[0].spin }}
-    {{ coords(molecules[0], "xyz") }}
+    {{ xyz(molecules[0]) }}
     *
     $ pnictogen new_template.ORCA.inp examples/water.xyz
     examples/water.inp written
@@ -60,7 +60,7 @@ and
     CHARGE={{ molecules[0].charge }} MS={{ (molecules[0].spin - 1)/2 }}
     {{ molecules[0].title }}
 
-    {{ coords(molecules[0], "mop") }}
+    {{ xyz(molecules[0], style="MOPAC") }}
 
 (``pnictogen -g new_template.inp`` creates a blank file.)
 
@@ -94,7 +94,7 @@ Besides this, pnictogen also understands a special delimiter (``--@``) that allo
     CHARGE={{ molecule.charge }} MS={{ (molecule.spin - 1)/2 }}
     {{ molecule.title }}
 
-    {{ coords(molecule, "mop") }}
+    {{ xyz(molecule, style="MOPAC") }}
 
     {% endfor %}
     $ pnictogen examples/templates/all.MOPAC.mop examples/pentane_conformers.xyz
