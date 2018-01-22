@@ -3,6 +3,6 @@
 CHARGE={{ molecule.charge }} MS={{ (molecule.spin - 1)/2 }}
 {{ molecule.title }}
 
-{{ coords(molecule, "mop") }}
+{{ xyz(molecule, style="MOPAC") }}
 
 {% endfor %}

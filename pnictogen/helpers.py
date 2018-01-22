@@ -2,47 +2,53 @@
 # -*- coding: utf-8 -*-
 
 # TODO: use mendeleev for periodic table
-# TODO: maybe not here, but allow the generation of conformers without energy
-# evaluations
+# TODO: allow the generation of conformers without energy evaluations
 # TODO: simple interface to MOPAC
 # TODO: make it easy to get number of electrons
+# TODO: function zmat() similar to xyz()
+# TODO: function rmsd(molecules) for calculating RMSD for a set of structures
+# TODO: function fragment(molecule) for splitting a molecule
 
 
-def coords(molecule, format="xyz"):
+def xyz(molecule, style="standard"):
     """
-    Write coordinates
+    Get cartesian coordinates for molecule
 
     Parameters
     ----------
     molecule : pybel.Molecule
-    format : str
-        Format of the coordinates ("xyz" or "mop"). See example below.
+    style : str, optional
+        Style of the cartesian coordinates. This can be "MOPAC" or "standard"
+        at the moment.
 
     Returns
     -------
     str
-        A string representing the molecular coordinates
+        Molecular cartesian coordinates as string in the given style
 
     Examples
     --------
-    A molecule can be written in a specified format:
-
     >>> from cinfony import pybel
-    >>> mol = pybel.readfile("xyz", "examples/water.xyz").next()
-    >>> print(coords(mol, "mop"))
+    >>> water_mol = pybel.readfile("xyz", "examples/water.xyz").next()
+    >>> print(xyz(water_mol, style="MOPAC"))
     O   0.05840 1  0.05840 1  0.00000 1
     H   1.00961 1 -0.06802 1  0.00000 1
     H  -0.06802 1  1.00961 1  0.00000 1
     """
-    converted = molecule.write(format)
-    if format in {"xyz", "mop"}:
+
+    if style == "standard":
+        converted = molecule.write("xyz")
+        converted = converted.split("\n", 2)[2].strip()
+    elif style == "MOPAC":
+        converted = molecule.write("mop")
         converted = converted.split("\n", 2)[2].strip()
     else:
         raise KeyError
+
     return converted
 
 
 # This dict is set to globals prior to template renderization
 available_helpers = {
-    "coords": coords
+    "xyz": xyz
 }

@@ -6,7 +6,7 @@ Number of atoms
  {{ molecules[0].atoms|count }}
 
 ATOMS Cartesian
-{{ coords(molecules[0], "xyz") }}
+{{ xyz(molecules[0]) }}
 End
 
 Basis
