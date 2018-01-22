@@ -5,7 +5,7 @@ from glob import iglob
 from cinfony import pybel
 from nose.tools import assert_equals
 
-from pnictogen import argparser, available_helpers, main, render_template
+from pnictogen import argparser, main
 
 # Only testing xyz files because I trust Open Babel to handle other file types
 example_xyz_files = iglob("examples/*.xyz")
@@ -46,28 +46,23 @@ def test_conformers():
 
 
 def test_render_boilerplates():
-    context = {
-        "molecules": list(pybel.readfile("xyz", "examples/water.xyz"))
-    }
-    context.update(available_helpers)
+    water_mol = pybel.readfile("xyz", "examples/water.xyz").next()
 
     main(["-g", "examples/boilerplates/ADF.in"])
-    assert_equals(render_template("examples/boilerplates/ADF.in", **context),
-                  context["molecules"][0].write("adf"))
+    main(["examples/boilerplates/ADF.in", "examples/water.xyz"])
+    assert_equals(open("examples/water.in").read(), water_mol.write("adf"))
 
     main(["-g", "examples/boilerplates/GAMESS.inp"])
-    assert_equals(render_template("examples/boilerplates/GAMESS.inp",
-                                  **context),
-                  context["molecules"][0].write("gamin"))
+    main(["examples/boilerplates/GAMESS.inp", "examples/water.xyz"])
+    assert_equals(open("examples/water.inp").read(), water_mol.write("gamin"))
 
     main(["-g", "examples/boilerplates/GAMESSUK.inp"])
-    assert_equals(render_template("examples/boilerplates/GAMESSUK.inp",
-                                  **context),
-                  context["molecules"][0].write("gukin"))
+    main(["examples/boilerplates/GAMESSUK.inp", "examples/water.xyz"])
+    assert_equals(open("examples/water.inp").read(), water_mol.write("gukin"))
 
     main(["-g", "examples/boilerplates/Gaussian.gjf"])
-    assert_equals(render_template("examples/boilerplates/Gaussian.gjf",
-                                  **context),
+    main(["examples/boilerplates/Gaussian.gjf", "examples/water.xyz"])
+    assert_equals(open("examples/water.gjf").read(),
                   """#Put Keywords Here, check Charge and Multiplicity.
 
  PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
@@ -80,18 +75,16 @@ H         -0.06802        1.00961        0.00000
 """)
 
     main(["-g", "examples/boilerplates/Jaguar.in"])
-    assert_equals(render_template("examples/boilerplates/Jaguar.in",
-                                  **context),
-                  context["molecules"][0].write("jin"))
+    main(["examples/boilerplates/Jaguar.in", "examples/water.xyz"])
+    assert_equals(open("examples/water.in").read(), water_mol.write("jin"))
 
     main(["-g", "examples/boilerplates/Molpro.inp"])
-    assert_equals(render_template("examples/boilerplates/Molpro.inp",
-                                  **context),
-                  context["molecules"][0].write("mp"))
+    main(["examples/boilerplates/Molpro.inp", "examples/water.xyz"])
+    assert_equals(open("examples/water.inp").read(), water_mol.write("mp"))
 
     main(["-g", "examples/boilerplates/MOPAC.mop"])
-    assert_equals(render_template("examples/boilerplates/MOPAC.mop",
-                                  **context),
+    main(["examples/boilerplates/MOPAC.mop", "examples/water.xyz"])
+    assert_equals(open("examples/water.mop").read(),
                   """CHARGE=0 MS=0.0
 PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
 
@@ -101,16 +94,16 @@ H  -0.06802 1  1.00961 1  0.00000 1
 """)
 
     main(["-g", "examples/boilerplates/MPQC.in"])
-    assert_equals(render_template("examples/boilerplates/MPQC.in", **context),
-                  context["molecules"][0].write("mpqcin"))
+    main(["examples/boilerplates/MPQC.in", "examples/water.xyz"])
+    assert_equals(open("examples/water.in").read(), water_mol.write("mpqcin"))
 
     main(["-g", "examples/boilerplates/NWChem.nw"])
-    assert_equals(render_template("examples/boilerplates/NWChem.nw",
-                                  **context),
-                  context["molecules"][0].write("nw"))
+    main(["examples/boilerplates/NWChem.nw", "examples/water.xyz"])
+    assert_equals(open("examples/water.nw").read(), water_mol.write("nw"))
 
     main(["-g", "examples/boilerplates/ORCA.inp"])
-    assert_equals(render_template("examples/boilerplates/ORCA.inp", **context),
+    main(["examples/boilerplates/ORCA.inp", "examples/water.xyz"])
+    assert_equals(open("examples/water.inp").read(),
                   """# PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
 ! Opt
 
@@ -122,7 +115,8 @@ H         -0.06802        1.00961        0.00000
 """)
 
     main(["-g", "examples/boilerplates/Psi.dat"])
-    assert_equals(render_template("examples/boilerplates/Psi.dat", **context),
+    main(["examples/boilerplates/Psi.dat", "examples/water.xyz"])
+    assert_equals(open("examples/water.dat").read(),
                   """# PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
 
 molecule {
@@ -136,13 +130,12 @@ units angstrom
 optimize('scf')""")
 
     main(["-g", "examples/boilerplates/QChem.in"])
-    assert_equals(render_template("examples/boilerplates/QChem.in", **context),
-                  context["molecules"][0].write("qcin"))
+    main(["examples/boilerplates/QChem.in", "examples/water.xyz"])
+    assert_equals(open("examples/water.in").read(), water_mol.write("qcin"))
 
     main(["-g", "examples/boilerplates/ZINDO.input"])
-    assert_equals(render_template("examples/boilerplates/ZINDO.input",
-                                  **context),
-                  context["molecules"][0].write("zin"))
+    main(["examples/boilerplates/ZINDO.input", "examples/water.xyz"])
+    assert_equals(open("examples/water.input").read(), water_mol.write("zin"))
 
 
 def test_keywords_in_title():
