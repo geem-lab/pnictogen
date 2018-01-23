@@ -135,3 +135,78 @@ In the example above, ``examples/pentane_conformers.xyz`` contains nine conforme
     H  -0.36907 1  2.07009 1 -1.27320 1
     H  -1.26610 1  0.80162 1 -2.14194 1
     H  -2.14898 1  2.07029 1 -1.25918 1
+
+Example: energy decomposition analysis (EDA) with ADF
+--------------------------------------------------------------
+
+Imagine we want to do `energy decomposition analysis <https://doi.org/10.1002/wcms.71>`_ on the following water dimer:
+
+.. code:: bash
+
+        $ cat water_dimer.xyz
+        6
+
+        O          0.12908       -0.26336        0.64798
+        H          0.89795        0.28805        0.85518
+        H          0.10833       -0.20468       -0.33302
+        O          0.31020        0.07569       -2.07524
+        H          0.64083       -0.57862       -2.71449
+        H         -0.26065        0.64232       -2.62218
+
+The following template uses both ``fragment()`` and ``xyz()`` functions to generate ADF inputs in bulk:
+
+.. code:: bash
+
+    $ cat EDA.ADF.in
+    {% set frags = fragment(molecules[0], [range(3), range(3, 6)]) %}
+    --@eda
+    ATOMS Cartesian
+    {% for frag in frags %}
+    {{ xyz(frag, "ADF", "frag{}".format(loop.index)) }}
+    {% endfor %}
+    End
+
+    Fragments
+    {% for frag in frags %}
+     frag{{ loop.index }} {{ input_name }}_frag{{ loop.index }}.t21
+    {% endfor %}
+    End
+
+    {% for frag in frags %}
+    --@frag{{ loop.index }}
+    ATOMS Cartesian
+    {{ xyz(frag) }}
+    End
+
+    {% endfor %}
+    $ pnictogen EDA.ADF.in examples/water_dimer.xyz
+    examples/water_dimer_eda.in written
+    examples/water_dimer_frag1.in written
+    examples/water_dimer_frag2.in written
+
+The above creates inputs like the following:
+
+.. code:: bash
+
+    $ cat water_dimer_eda.in
+    ATOMS Cartesian
+    O          0.12908       -0.26336        0.64798       f=frag1
+    H          0.89795        0.28805        0.85518       f=frag1
+    H          0.10833       -0.20468       -0.33302       f=frag1
+    O          0.31020        0.07569       -2.07524       f=frag2
+    H          0.64083       -0.57862       -2.71449       f=frag2
+    H         -0.26065        0.64232       -2.62218       f=frag2
+    End
+
+    Fragments
+    frag1 examples/water_dimer_frag1.t21
+    frag2 examples/water_dimer_frag2.t21
+    End
+
+    $ cat water_dimer_frag1.in
+    ATOMS Cartesian
+    O          0.12908       -0.26336        0.64798
+    H          0.89795        0.28805        0.85518
+    H          0.10833       -0.20468       -0.33302
+    End
+

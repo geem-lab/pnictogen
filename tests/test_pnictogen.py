@@ -152,3 +152,79 @@ O          0.05840        0.05840        0.00000
 H          1.00961       -0.06802        0.00000
 
 """)
+
+
+def test_example_eda_adf():
+    main(["examples/templates/EDA.ADF.in", "examples/water_dimer.xyz"])
+
+    assert_equals(open("examples/water_dimer_eda.in").read(),
+                  """TITLE examples/water_dimer.xyz
+
+CHARGE 0  0
+
+Number of atoms
+ 6
+
+ATOMS Cartesian
+O          0.12908       -0.26336        0.64798       f=frag1
+H          0.89795        0.28805        0.85518       f=frag1
+H          0.10833       -0.20468       -0.33302       f=frag1
+O          0.31020        0.07569       -2.07524       f=frag2
+H         -0.26065        0.64232       -2.62218       f=frag2
+H          0.64083       -0.57862       -2.71449       f=frag2
+End
+
+Fragments
+ frag1 examples/water_dimer_frag1.t21
+ frag2 examples/water_dimer_frag2.t21
+End
+
+Basis
+End
+
+Geometry
+End
+
+""")
+    assert_equals(open("examples/water_dimer_frag1.in").read(),
+                  """TITLE frag1
+
+CHARGE 0  0
+
+Number of atoms
+ 3
+
+ATOMS Cartesian
+O          0.12908       -0.26336        0.64798
+H          0.89795        0.28805        0.85518
+H          0.10833       -0.20468       -0.33302
+End
+
+Basis
+End
+
+Geometry
+End
+
+""")
+    assert_equals(open("examples/water_dimer_frag2.in").read(),
+                  """TITLE frag2
+
+CHARGE 0  0
+
+Number of atoms
+ 3
+
+ATOMS Cartesian
+O          0.31020        0.07569       -2.07524
+H         -0.26065        0.64232       -2.62218
+H          0.64083       -0.57862       -2.71449
+End
+
+Basis
+End
+
+Geometry
+End
+
+""")

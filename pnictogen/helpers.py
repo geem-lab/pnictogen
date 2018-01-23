@@ -80,7 +80,7 @@ def fragment(molecule, indices=None):
     return [pybel.Molecule(frag) for frag in molecule.OBMol.Separate()]
 
 
-def xyz(molecule, style="standard"):
+def xyz(molecule, style="standard", flag=None):
     """
     Get cartesian coordinates for molecule
 
@@ -88,8 +88,11 @@ def xyz(molecule, style="standard"):
     ----------
     molecule : pybel.Molecule
     style : str, optional
-        Style of the cartesian coordinates. This can be "MOPAC" or "standard"
-        at the moment.
+        Dialect of cartesian coordinates. This can be "MOPAC", "ADF" or
+        "standard" at the moment.
+    flag : str, optional
+        If style is "ADF", an extra column is added for naming this fragment
+        (see examples below).
 
     Returns
     -------
@@ -103,11 +106,25 @@ def xyz(molecule, style="standard"):
     O   0.05840 1  0.05840 1  0.00000 1
     H   1.00961 1 -0.06802 1  0.00000 1
     H  -0.06802 1  1.00961 1  0.00000 1
+
+    Fragment naming in ADF can be given:
+
+    >>> print(xyz(water_mol, style="ADF", flag="frag1"))
+    O          0.05840        0.05840        0.00000       f=frag1
+    H          1.00961       -0.06802        0.00000       f=frag1
+    H         -0.06802        1.00961        0.00000       f=frag1
     """
 
-    if style == "standard":
+    if style in {"ADF", "standard"}:
         converted = molecule.write("xyz")
         converted = converted.split("\n", 2)[2].strip()
+
+        if flag is not None:
+            if style == "ADF":
+                converted = "\n".join(["{}       f={}".format(line, flag)
+                                       for line in converted.split("\n")])
+            else:
+                raise KeyError
     elif style == "MOPAC":
         converted = molecule.write("mop")
         converted = converted.split("\n", 2)[2].strip()
@@ -119,5 +136,6 @@ def xyz(molecule, style="standard"):
 
 # This dict is set to globals prior to template renderization
 available_helpers = {
-    "xyz": xyz
+    "fragment": fragment,
+    "xyz": xyz,
 }

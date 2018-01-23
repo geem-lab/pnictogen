@@ -106,7 +106,7 @@ def main(argv=sys.argv[1:]):
         print("{:s} written".format(args.template_name))
     else:
         for descriptor in args.descriptors:
-            name, descriptor_extension = os.path.splitext(descriptor)
+            input_name, descriptor_extension = os.path.splitext(descriptor)
 
             # TODO: try cclib before Open Babel
             molecules = list(pybel.readfile(descriptor_extension[1:],
@@ -124,6 +124,7 @@ def main(argv=sys.argv[1:]):
             # TODO: add some keywords from command-line to context (like
             # "-k charge=-1" or from a yaml file)
             raw_rendered = render_template(args.template_name,
+                                           input_name=input_name,
                                            molecules=molecules,
                                            globals=available_helpers)
 
@@ -137,7 +138,7 @@ def main(argv=sys.argv[1:]):
                     flag = "_{:s}".format(flag)
 
                 if rendered.strip():
-                    path = "{:s}{:s}.{:s}".format(name, flag,
+                    path = "{:s}{:s}.{:s}".format(input_name, flag,
                                                   template_extension)
                     with open(path, "w") as stream:
                         stream.write(rendered)
@@ -196,6 +197,7 @@ def render_template(template_name, **context):
     jinja_env = Environment(
         loader=FileSystemLoader("./"),
         extensions=extensions,
+        trim_blocks=True,
     )
     jinja_env.globals.update(globals)
 
