@@ -11,16 +11,19 @@ from cinfony import pybel
 # TODO: function rmsd(molecules) for calculating RMSD for a set of structures
 
 
-def fragment(molecule):
+def fragment(molecule, indices=None):
     """
-    Separate molecule in fragments
+    Split molecule into fragments
 
-    This might permute some atoms in the fragments, when compared to the
-    original molecule (<https://github.com/openbabel/openbabel/issues/1763>).
+    If indices is not given, atoms might permute in fragments, when compared to
+    the original order (<https://github.com/openbabel/openbabel/issues/1763>).
 
     Parameters
     ----------
     molecule : pybel.Molecule
+    indices : list of tuples of int, optional
+        Assigments of atoms to fragments. Each element of indices is a tuple
+        with atomic indices representing a fragment (see examples below).
 
     Returns
     -------
@@ -28,6 +31,8 @@ def fragment(molecule):
 
     Examples
     --------
+    By default, fragment simply returns all non-bonded fragments:
+
     >>> dimer_mol = pybel.readfile("xyz", "examples/water_dimer.xyz").next()
     >>> for water_mol in fragment(dimer_mol):
     ...     print(water_mol.write("xyz"))
@@ -43,7 +48,35 @@ def fragment(molecule):
     H         -0.26065        0.64232       -2.62218
     H          0.64083       -0.57862       -2.71449
     <BLANKLINE>
+
+    But if indices are given, fragments are built from the corresponding
+    atoms. This allows one to perform extraction and permutation of atoms:
+
+    >>> for water_mol in fragment(dimer_mol, [(4, 5, 3), (1, 0)]):
+    ...     print(water_mol.write("xyz"))
+    3
+    <BLANKLINE>
+    H          0.64083       -0.57862       -2.71449
+    H         -0.26065        0.64232       -2.62218
+    O          0.31020        0.07569       -2.07524
+    <BLANKLINE>
+    2
+    <BLANKLINE>
+    H          0.89795        0.28805        0.85518
+    O          0.12908       -0.26336        0.64798
+    <BLANKLINE>
     """
+    if indices is not None:
+        fragments = []
+        for atom_ids in indices:
+            fragment_obmol = pybel.ob.OBMol()
+            for i in atom_ids:
+                obatom = molecule.OBMol.GetAtomById(i)
+                fragment_obmol.InsertAtom(obatom)
+
+            fragments.append(pybel.Molecule(fragment_obmol))
+        return fragments
+
     return [pybel.Molecule(frag) for frag in molecule.OBMol.Separate()]
 
 

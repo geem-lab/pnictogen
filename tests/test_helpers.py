@@ -18,6 +18,14 @@ H          0.10833       -0.20468       -0.33302""", """O          0.31020      
 H         -0.26065        0.64232       -2.62218
 H          0.64083       -0.57862       -2.71449"""])
 
+    assert_equals([xyz(frag) for frag in fragment(dimer_mol, [range(6)])],
+                  [xyz(dimer_mol)])
+
+    assert_equals([xyz(frag) for frag in fragment(dimer_mol, [(2, 1), (5,)])],
+                  ["""H          0.10833       -0.20468       -0.33302
+H          0.89795        0.28805        0.85518""",
+                   "H         -0.26065        0.64232       -2.62218"])
+
 
 def test_xyz():
     assert_equals(xyz(water_mol), xyz(water_mol, style="standard"))
