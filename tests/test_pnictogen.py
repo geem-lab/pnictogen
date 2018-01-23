@@ -35,7 +35,7 @@ def test_main():
 
 
 def test_conformers():
-    main(["examples/templates/all.MOPAC.mop",
+    main(["examples/templates/opt.MOPAC.mop",
           "examples/pentane_conformers.xyz"])
 
 
