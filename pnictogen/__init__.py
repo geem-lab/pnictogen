@@ -4,25 +4,18 @@
 import os
 import sys
 import yaml
+import parse
 import argparse
 import pkg_resources
+from jinja2 import Environment, FileSystemLoader
+from cinfony import pybel
 
-from .composer import Composer
-from pnictogen.molecule import read_molecules, supported_extensions_dict
+from pnictogen.helpers import available_helpers
 
 __version__ = pkg_resources.require(__name__)[0].version
 
 with open(os.path.join(os.path.dirname(__file__), "../config.yml")) as stream:
     config = yaml.load(stream)
-
-supported_packages = config["packages"].keys()
-supported_packages_desc = " or ".join([", ".join(supported_packages[:-1]),
-                                      supported_packages[-1]])
-
-supported_extensions = ["{} ({})".format(k, v) for k, v
-                        in supported_extensions_dict.items()]
-supported_extensions_desc = " or ".join([", ".join(supported_extensions[:-1]),
-                                        supported_extensions[-1]])
 
 
 def argparser():
@@ -45,8 +38,7 @@ def argparser():
     >>> args = parser.parse_args(argv)
 
     parser is then an argparse.ArgumentParser object and args an object
-    representing parsed arguments. Both objects can be used in your code in
-    order to reproduce the bevahiour of pnictogen if so desired.
+    representing parsed arguments.
     """
 
     parser = argparse.ArgumentParser(
@@ -61,18 +53,18 @@ def argparser():
         "-v", "--version",
         action="version", version="%(prog)s {:s}".format(__version__))
 
+    # TODO: manpage
     parser.add_argument(
-        "template", metavar="template.package.ext | template.ext",
+        "template_name", metavar="template.package.ext | template.ext",
         help="""template file.
         "ext" can be anything.
         "package" might be one of the following:
-        {}.""".format(supported_packages_desc))
+        {}.""".format(", ".join(config["packages"].keys())))
     parser.add_argument(
         "descriptors", metavar="descriptor.ext", nargs="*",
-        help="""files describing molecules.
-        "ext" can be one of the following:
-        {}. Please check Open Babel documentation for
-        more about these formats.""".format(supported_extensions_desc))
+        help="""files describing molecules, which are read using Open Babel
+        (run "$ obabel -L formats" for a list of all available file
+        formats).""")
 
     return parser
 
@@ -81,13 +73,20 @@ def main(argv=sys.argv[1:]):
     """
     Pnictogen command-line interface. It writes inputs for sets of molecules.
 
+    Parameters
+    ----------
+    argv : list of str
+        Arguments as taken from the command-line
+
     Examples
     --------
     Although this function is not intended to be called from Python code, the
     following should work:
 
     >>> import pnictogen
-    >>> pnictogen.main(["examples/template/ORCA.inp", "examples/co.xyz",
+    >>> pnictogen.main(["-g", "examples/boilerplates/ORCA.inp"])
+    examples/boilerplates/ORCA.inp written
+    >>> pnictogen.main(["examples/boilerplates/ORCA.inp", "examples/co.xyz",
     ...                 "examples/water.xyz"])
     examples/co.inp written
     examples/water.inp written
@@ -97,37 +96,112 @@ def main(argv=sys.argv[1:]):
 
     parser = argparser()
     args = parser.parse_args(argv)
-
-    cli = {"args": args, "parser": parser}
-
     package, template_extension = \
-        os.path.basename(args.template).split(".")[-2:]
+        os.path.basename(args.template_name).split(".")[-2:]
 
     if args.generate:
-        with open(args.template, "w") as stream:
+        with open(args.template_name, "w") as stream:
             if package in config["packages"]:
                 stream.write(config["packages"][package]["boilerplate"])
-
-        print("{:s} written".format(args.template))
+        print("{:s} written".format(args.template_name))
     else:
         for descriptor in args.descriptors:
-            cli["molecule"] = os.path.abspath(descriptor)
+            input_name, descriptor_extension = os.path.splitext(descriptor)
 
-            basename, descriptor_extension = os.path.splitext(descriptor)
-            input_path = "{:s}.{:s}".format(basename, template_extension)
+            # TODO: try cclib before Open Babel
+            molecules = list(pybel.readfile(descriptor_extension[1:],
+                                            descriptor))
 
-            cli["output"] = os.path.abspath(input_path)
+            pattern = parse.compile("{key:S}={value:S}")
+            for molecule in molecules:
+                for result in pattern.findall(molecule.title):
+                    if result["key"] == "charge":
+                        molecule.OBMol.SetTotalCharge(int(result["value"]))
+                    elif result["key"] == "spin":
+                        molecule.OBMol.SetTotalSpinMultiplicity(
+                            int(result["value"]))
 
-            try:
-                mols = read_molecules(descriptor, descriptor_extension[1:])
-                rendered = str(Composer(args.template, mols, cli))
-            except IOError as e:
-                raise parser.error(e)
+            # TODO: add some keywords from command-line to context (like
+            # "-k charge=-1" or from a yaml file)
+            raw_rendered = render_template(args.template_name,
+                                           input_name=input_name,
+                                           molecules=molecules,
+                                           globals=available_helpers)
 
-            with open(input_path, "w") as stream:
-                stream.write(rendered)
+            flag = None
+            raw_rendered = raw_rendered.split('--@')
+            for rendered in raw_rendered:
+                if flag is None:
+                    flag = ""
+                else:
+                    flag, rendered = rendered.split("\n", 1)
+                    flag = "_{:s}".format(flag)
 
-            print("{:s} written".format(input_path))
+                if rendered.strip():
+                    path = "{:s}{:s}.{:s}".format(input_name, flag,
+                                                  template_extension)
+                    with open(path, "w") as stream:
+                        stream.write(rendered)
+                    print("{:s} written".format(path))
+
+
+def render_template(template_name, **context):
+    """
+    Define template rendering with Jinja2
+
+    Parameters
+    ----------
+    template_name : str
+        Path to template, relative to the local directory
+    extensions : list
+        Extensions to Jinja2
+    globals : dict
+        Jinja2 specification of objects available within templates
+
+    Extra parameters are passed directly to the template
+
+    Returns
+    -------
+    str
+        The rendered result as returned by Jinja2
+
+    Examples
+    --------
+    >>> main(["-g", "examples/boilerplates/QChem.in"])
+    examples/boilerplates/QChem.in written
+    >>> context = {
+    ...     "molecules": list(pybel.readfile("xyz", "examples/water.xyz"))
+    ... }
+    >>> print(render_template("examples/boilerplates/QChem.in", **context))
+    $comment
+    PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
+    $end
+    <BLANKLINE>
+    $molecule
+    0 1
+    8 0.0584027 0.0584027 0
+    1 1.00961 -0.0680162 0
+    1 -0.0680162 1.00961 0
+    $end
+    <BLANKLINE>
+    $rem
+    <BLANKLINE>
+    $end
+    <BLANKLINE>
+    """
+    extensions = context.pop('extensions', [])
+    globals = context.pop('globals', {})
+
+    # TODO: allow and test for templates inheritance (maybe adding something
+    # like "~/.pnictogen/" to searchpath as well)
+    jinja_env = Environment(
+        loader=FileSystemLoader("./"),
+        extensions=extensions,
+        trim_blocks=True,
+    )
+    jinja_env.globals.update(globals)
+
+    return jinja_env.get_template(template_name).render(context)
 
 
 if __name__ == "__main__":

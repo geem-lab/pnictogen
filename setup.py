@@ -31,9 +31,9 @@ Topic :: Education
 Topic :: Software Development :: Libraries :: Python Modules"""
 
 keywords = [
-    'chemistry',
-    'research',
     'science',
+    'research',
+    'chemistry',
 ]
 
 # The list of packages to be installed.
@@ -42,12 +42,15 @@ packages = [
 ]
 
 install_requires = [
+    'nose',
+    'parse',
+    'pyyaml',
     'jinja2',
-    'mendeleev',
+    'cinfony',
     # 'openbabel',
 ]
 
-data_files = [('.', ['templates/*', 'examples/*'])]
+data_files = [('.', ['examples/*'])]
 
 setup(
     name='pnictogen',
