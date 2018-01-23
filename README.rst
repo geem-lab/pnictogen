@@ -88,7 +88,7 @@ Besides this, pnictogen also understands a special delimiter (``--@``) that allo
 
 .. code:: bash
 
-    $ cat examples/templates/all.MOPAC.mop
+    $ cat examples/templates/opt.MOPAC.mop
     {% for molecule in molecules %}
     --@{{ loop.index }}
     CHARGE={{ molecule.charge }} MS={{ (molecule.spin - 1)/2 }}
@@ -97,7 +97,7 @@ Besides this, pnictogen also understands a special delimiter (``--@``) that allo
     {{ xyz(molecule, style="MOPAC") }}
 
     {% endfor %}
-    $ pnictogen examples/templates/all.MOPAC.mop examples/pentane_conformers.xyz
+    $ pnictogen examples/templates/opt.MOPAC.mop examples/pentane_conformers.xyz
     examples/pentane_conformers_1.mop written
     examples/pentane_conformers_2.mop written
     examples/pentane_conformers_3.mop written
@@ -209,4 +209,3 @@ The above creates inputs like the following:
     H          0.89795        0.28805        0.85518
     H          0.10833       -0.20468       -0.33302
     End
-
