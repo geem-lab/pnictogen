@@ -41,12 +41,12 @@ pnictogen can currently create boilerplates for
 `GAMESS (US) <http://www.msg.ameslab.gov/GAMESS/GAMESS.html>`_,
 `GAMESS-UK <http://www.cfs.dl.ac.uk/>`_,
 `Gaussian <http://www.gaussian.com/>`_,
-`Jaguar <http://www.schrodinger.com/ProductDescription.php?mID=6&sID=9>`_,
+`Jaguar <https://www.schrodinger.com/jaguar>`_,
 `Molpro <http://www.molpro.net/>`_,
 `MOPAC <http://openmopac.net/>`_,
 `MPQC <http://www.mpqc.org/>`_,
 `NWChem <http://www.nwchem-sw.org/index.php/Main_Page>`_,
-`ORCA <http://www.thch.uni-bonn.de/tc/orca/>`_,
+`ORCA <https://orcaforum.cec.mpg.de/>`_,
 `Psi <http://psicode.org/>`_,
 `Q-Chem <http://q-chem.com/>`_
 and
