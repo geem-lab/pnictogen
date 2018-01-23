@@ -63,8 +63,8 @@ def argparser():
     parser.add_argument(
         "descriptors", metavar="descriptor.ext", nargs="*",
         help="""files describing molecules, which are read using Open Babel
-        (execute "$ obabel -L formats" for a full list of possible file
-        types).""")
+        (run "$ obabel -L formats" for a list of all available file
+        formats).""")
 
     return parser
 
