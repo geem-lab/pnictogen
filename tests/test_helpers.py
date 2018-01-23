@@ -33,6 +33,13 @@ def test_xyz():
                   """O          0.05840        0.05840        0.00000
 H          1.00961       -0.06802        0.00000
 H         -0.06802        1.00961        0.00000""")
+
+    assert_equals(xyz(water_mol), xyz(water_mol, style="ADF"))
+    assert_equals(xyz(water_mol, style="ADF", flag="water"),
+                  """O          0.05840        0.05840        0.00000       f=water
+H          1.00961       -0.06802        0.00000       f=water
+H         -0.06802        1.00961        0.00000       f=water""")
+
     assert_equals(xyz(water_mol, style="MOPAC"),
                   """O   0.05840 1  0.05840 1  0.00000 1
 H   1.00961 1 -0.06802 1  0.00000 1

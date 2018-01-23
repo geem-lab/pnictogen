@@ -1,0 +1,19 @@
+TITLE frag2
+
+CHARGE 0  0
+
+Number of atoms
+ 3
+
+ATOMS Cartesian
+O          0.31020        0.07569       -2.07524
+H         -0.26065        0.64232       -2.62218
+H          0.64083       -0.57862       -2.71449
+End
+
+Basis
+End
+
+Geometry
+End
+
