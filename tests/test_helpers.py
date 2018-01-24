@@ -4,10 +4,29 @@
 import pybel
 from nose.tools import assert_equals
 
-from pnictogen.helpers import fragment, xyz
+from pnictogen import main
+from pnictogen.helpers import conformers, fragment, xyz
 
 water_mol = list(pybel.readfile("xyz", "examples/water.xyz"))[0]
 dimer_mol = list(pybel.readfile("xyz", "examples/water_dimer.xyz"))[0]
+cyclohexanol_mol = list(pybel.readfile("xyz", "examples/cyclohexanol.xyz"))[0]
+pentane_mol = list(pybel.readfile("xyz", "examples/pentane.xyz"))[0]
+
+
+def test_conformers():
+    cyclohexanol_conformers = conformers(cyclohexanol_mol)
+    assert_equals(len(cyclohexanol_conformers), 1)
+
+    pentane_conformers = conformers(pentane_mol)
+    assert_equals(len(pentane_conformers), 7)
+
+    output = pybel.Outputfile("xyz", "examples/pentane_conformers.xyz",
+                              overwrite=True)
+    for mol in pentane_conformers:
+        output.write(mol)
+    output.close()
+    main(["examples/templates/opt.MOPAC.mop",
+          "examples/pentane_conformers.xyz"])
 
 
 def test_fragment():

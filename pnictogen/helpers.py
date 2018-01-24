@@ -4,11 +4,85 @@
 import pybel
 
 # TODO: use mendeleev for periodic table
-# TODO: allow the generation of conformers without energy evaluations
 # TODO: simple interface to MOPAC
 # TODO: make it easy to get number of electrons
 # TODO: function zmat() similar to xyz()
 # TODO: function rmsd(molecules) for calculating RMSD for a set of structures
+
+
+# TODO: fix bonds between specific atoms or all bonds of a specific atom
+def conformers(molecule, nconf=30, children=5, mutability=5, convergence=25,
+               copyformat="xyz"):
+    """
+    Conformer search provided by Open Babel based on a genetic algorithm.
+    You might want to play around with the parameters for this function (see
+    below).
+
+    Parameters
+    ----------
+    molecule : pybel.Molecule
+        The molecule with initial conformer
+    nconf : int, optional
+        Maximum number of conformers that should be generated. This is also the
+        number of conformers selected for each generation.
+    children : int, optional
+        When a new generation is generated, for each of the nconf conformers,
+        this number of children are created.
+    mutability : int, optional
+        This determines how frequent a permutation occurs when generating the
+        next generation (e.g. 5 means 1/5 bonds are permuted, 10 means 1/10,
+        etc.).
+    convergence : int, optional
+        The number of identical generations before considering the process
+        converged.
+    copyformat : str, optional
+        File format to be used internally
+
+    Returns
+    -------
+    list of pybel.Molecule
+
+    Examples
+    --------
+    The number of conformers found will depend on the number of rotatable
+    bonds in the molecule:
+
+    >>> for i in range(1, 8):
+    ...     smi = "C" * i
+    ...     mol = pybel.readstring("smi", smi)
+    ...     nconf = len(conformers(mol))
+    ...     print("Found {:2d} conformers for {:s}".format(nconf, smi))
+    Found  1 conformers for C
+    Found  1 conformers for CC
+    Found  1 conformers for CCC
+    Found  3 conformers for CCCC
+    Found  7 conformers for CCCCC
+    Found 17 conformers for CCCCCC
+    Found 30 conformers for CCCCCCC
+    """
+
+    num_rotors = molecule.OBMol.NumRotors()
+    if num_rotors < 1:
+        # Nothing to rotate
+        return [molecule]
+
+    if molecule.dim < 3:
+        molecule.make3D()
+
+    copy_molecule = pybel.readstring(copyformat, molecule.write(copyformat))
+
+    cs = pybel.ob.OBConformerSearch()
+    cs.Setup(copy_molecule.OBMol, nconf, children, mutability, convergence)
+
+    cs.Search()
+    cs.GetConformers(copy_molecule.OBMol)
+
+    conformers = []
+    for i in range(copy_molecule.OBMol.NumConformers()):
+        copy_molecule.OBMol.SetConformer(i)
+        conformers.append(pybel.readstring(copyformat,
+                                           copy_molecule.write(copyformat)))
+    return conformers
 
 
 def fragment(molecule, indices=None):
@@ -145,6 +219,7 @@ def xyz(molecule, style="standard", flag=None):
 
 # This dict is set to globals prior to template renderization
 available_helpers = {
+    "conformers": conformers,
     "fragment": fragment,
     "xyz": xyz,
 }

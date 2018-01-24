@@ -34,11 +34,6 @@ def test_main():
         main([template] + list(example_xyz_files))
 
 
-def test_conformers():
-    main(["examples/templates/opt.MOPAC.mop",
-          "examples/pentane_conformers.xyz"])
-
-
 # TODO: create hello world template in a temporary file to test
 # render_template() without any molecule.
 # def test_render_templates():
