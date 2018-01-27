@@ -70,7 +70,14 @@ packages:
       {{ molecules[0].write('mpqcin') }}
   NWChem:
     boilerplate: |+
-      {{ molecules[0].write('nw') }}
+      start molecule
+
+      title {{ molecules[0].title }}
+
+      geometry units angstroms print xyz autosym
+      {{ xyz(molecules[0]) }}
+      end
+
   ORCA:
     boilerplate: |+
       # {{ molecules[0].title }}

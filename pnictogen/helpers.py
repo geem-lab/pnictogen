@@ -205,8 +205,8 @@ def xyz(molecule, style="standard", flag=None):
             else:
                 raise KeyError
     elif style == "GAMESS":
-        converted = molecule.write("gamin")
-        converted = converted.strip().split("\n")[5:-1]
+        converted = molecule.write("gamin").strip()
+        converted = converted.split("\n")[5:-1]
         converted = "\n".join([line.strip() for line in converted])
     elif style == "MOPAC":
         converted = molecule.write("mop")

@@ -123,7 +123,16 @@ H  -0.06802 1  1.00961 1  0.00000 1
 
     main(["-g", "examples/boilerplates/NWChem.nw"])
     main(["examples/boilerplates/NWChem.nw", "examples/water.xyz"])
-    assert_equals(open("examples/water.nw").read(), water_mol.write("nw"))
+    assert_equals(open("examples/water.nw").read(), """start molecule
+
+title PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
+
+geometry units angstroms print xyz autosym
+O          0.05840        0.05840        0.00000
+H          1.00961       -0.06802        0.00000
+H         -0.06802        1.00961        0.00000
+end
+""")
 
     main(["-g", "examples/boilerplates/ORCA.inp"])
     main(["examples/boilerplates/ORCA.inp", "examples/water.xyz"])
