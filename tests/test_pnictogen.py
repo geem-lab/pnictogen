@@ -174,7 +174,6 @@ optimize('scf')""")
 def test_keywords_in_title():
     main(["-g", "examples/boilerplates/Gaussian.gjf"])
     main(["examples/boilerplates/Gaussian.gjf", "examples/hydroxide.xyz"])
-
     assert_equals(open("examples/hydroxide.gjf").read(),
                   """#Put Keywords Here, check Charge and Multiplicity.
 
@@ -189,7 +188,6 @@ H          1.00961       -0.06802        0.00000
 
 def test_example_eda_adf():
     main(["examples/templates/EDA.ADF.in", "examples/water_dimer.xyz"])
-
     assert_equals(open("examples/water_dimer_eda.in").read(),
                   """TITLE examples/water_dimer.xyz
 
@@ -260,4 +258,21 @@ End
 Geometry
 End
 
+""")
+
+
+def test_example_fragments_orca():
+    main(["examples/templates/fragments.ORCA.inp", "examples/water_dimer.xyz"])
+    assert_equals(open("examples/water_dimer.inp").read(),
+                  """# examples/water_dimer.xyz
+! Opt
+
+* xyz 0 1
+O(1)       0.12908       -0.26336        0.64798
+H(1)       0.89795        0.28805        0.85518
+H(1)       0.10833       -0.20468       -0.33302
+O(2)       0.31020        0.07569       -2.07524
+H(2)      -0.26065        0.64232       -2.62218
+H(2)       0.64083       -0.57862       -2.71449
+*
 """)

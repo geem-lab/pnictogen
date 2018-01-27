@@ -162,8 +162,8 @@ def xyz(molecule, style="standard", flag=None):
     ----------
     molecule : pybel.Molecule
     style : str, optional
-        Dialect of cartesian coordinates. This can be "ADF", "GAMESS", "MOPAC"
-        or "standard" at the moment.
+        Dialect of cartesian coordinates. This can be "ADF", "GAMESS", "MOPAC",
+        "ORCA" or "standard".
     flag : str, optional
         If style is "ADF", an extra column is added for naming this fragment
         (see examples below).
@@ -194,7 +194,7 @@ def xyz(molecule, style="standard", flag=None):
     H         -0.06802        1.00961        0.00000       f=frag1
     """
 
-    if style in {"ADF", "standard"}:
+    if style in {"ADF", "ORCA", "standard"}:
         converted = molecule.write("xyz")
         converted = converted.split("\n", 2)[2].strip()
 
@@ -202,6 +202,10 @@ def xyz(molecule, style="standard", flag=None):
             if style == "ADF":
                 converted = "\n".join(["{}       f={}".format(line, flag)
                                        for line in converted.split("\n")])
+            elif style == "ORCA":
+                flag = "({})".format(flag)
+                converted = "\n".join([line.replace(" " * len(flag), flag, 1)
+                                      for line in converted.split("\n")])
             else:
                 raise KeyError
     elif style == "GAMESS":
