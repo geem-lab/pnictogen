@@ -7,7 +7,7 @@ import yaml
 import parse
 import argparse
 import pkg_resources
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 import pybel
 
 from pnictogen.helpers import available_helpers
@@ -201,7 +201,12 @@ def render_template(template_name, **context):
     )
     jinja_env.globals.update(globals)
 
-    return jinja_env.get_template(template_name).render(context)
+    try:
+        template = jinja_env.get_template(template_name)
+    except TemplateNotFound:
+        template = jinja_env.from_string(open(template_name).read())
+
+    return template.render(context)
 
 
 if __name__ == "__main__":

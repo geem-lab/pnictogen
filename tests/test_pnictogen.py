@@ -1,15 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 from glob import iglob
 import pybel
 from nose.tools import assert_equals
+from contextlib import contextmanager
 
 from pnictogen import argparser, main
 
 # Only testing xyz files because I trust Open Babel to handle other file types
 example_xyz_files = iglob("examples/*.xyz")
 boilerplates = iglob("examples/boilerplates/*")
+
+
+@contextmanager
+def cd(newdir):
+    prevdir = os.getcwd()
+    os.chdir(os.path.expanduser(newdir))
+    try:
+        yield
+    finally:
+        os.chdir(prevdir)
+
 
 # TODO: make prettier error messages when runnig tests
 
@@ -32,6 +45,10 @@ def test_main():
 
         # All at once
         main([template] + list(example_xyz_files))
+
+    # Allow use of template in the parent directory
+    with cd("examples/boilerplates"):
+        main(["../templates/EDA.ADF.in", "../water_dimer.xyz"])
 
 
 # TODO: create hello world template in a temporary file to test
