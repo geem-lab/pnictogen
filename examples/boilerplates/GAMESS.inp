@@ -1,1 +1,10 @@
-{{ molecules[0].write('gamin') }}
+ $CONTRL COORD=CART UNITS=ANGS $END
+
+ $DATA
+{{ molecules[0].title }}
+C1
+{{ xyz(molecules[0], style="GAMESS") }}
+ $END
+
+
+

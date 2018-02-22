@@ -88,8 +88,8 @@ def xyz(molecule, style="standard", flag=None):
     ----------
     molecule : pybel.Molecule
     style : str, optional
-        Dialect of cartesian coordinates. This can be "MOPAC", "ADF" or
-        "standard" at the moment.
+        Dialect of cartesian coordinates. This can be "ADF", "GAMESS", "MOPAC"
+        or "standard" at the moment.
     flag : str, optional
         If style is "ADF", an extra column is added for naming this fragment
         (see examples below).
@@ -106,6 +106,11 @@ def xyz(molecule, style="standard", flag=None):
     O   0.05840 1  0.05840 1  0.00000 1
     H   1.00961 1 -0.06802 1  0.00000 1
     H  -0.06802 1  1.00961 1  0.00000 1
+
+    >>> print(xyz(water_mol, style="GAMESS"))
+    O      8.0      0.0584027061    0.0584027059    0.0000000000
+    H      1.0      1.0096135406   -0.0680162466    0.0000000000
+    H      1.0     -0.0680162466    1.0096135407    0.0000000000
 
     Fragment naming in ADF can be given:
 
@@ -125,6 +130,10 @@ def xyz(molecule, style="standard", flag=None):
                                        for line in converted.split("\n")])
             else:
                 raise KeyError
+    elif style == "GAMESS":
+        converted = molecule.write("gamin")
+        converted = converted.strip().split("\n")[5:-1]
+        converted = "\n".join([line.strip() for line in converted])
     elif style == "MOPAC":
         converted = molecule.write("mop")
         converted = converted.split("\n", 2)[2].strip()

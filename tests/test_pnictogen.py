@@ -54,7 +54,19 @@ def test_render_boilerplates():
 
     main(["-g", "examples/boilerplates/GAMESS.inp"])
     main(["examples/boilerplates/GAMESS.inp", "examples/water.xyz"])
-    assert_equals(open("examples/water.inp").read(), water_mol.write("gamin"))
+    assert_equals(open("examples/water.inp").read(),
+                  """ $CONTRL COORD=CART UNITS=ANGS $END
+
+ $DATA
+PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
+C1
+O      8.0      0.0584027061    0.0584027059    0.0000000000
+H      1.0      1.0096135406   -0.0680162466    0.0000000000
+H      1.0     -0.0680162466    1.0096135407    0.0000000000
+ $END
+
+
+""")
 
     main(["-g", "examples/boilerplates/GAMESSUK.inp"])
     main(["examples/boilerplates/GAMESSUK.inp", "examples/water.xyz"])
