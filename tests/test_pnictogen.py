@@ -7,7 +7,7 @@ import pybel
 from nose.tools import assert_equals
 from contextlib import contextmanager
 
-from pnictogen import argparser, main
+from pnictogen import argparser, main, pnictogen, update_data
 
 # Only testing xyz files because I trust Open Babel to handle other file types
 example_xyz_files = iglob("examples/*.xyz")
@@ -49,6 +49,31 @@ def test_main():
     # Allow use of template in the parent directory
     with cd("examples/boilerplates"):
         main(["../templates/EDA.ADF.in", "../water_dimer.xyz"])
+
+
+def test_pnictogen():
+    for template in boilerplates:
+        template_prefix, extension = os.path.splitext(template)
+        for xyz_file in example_xyz_files:
+            input_prefix, xyz_file_extension = os.path.splitext(xyz_file)
+
+            mol = pybel.readfile("xyz", xyz_file)
+            written_files = pnictogen(mol, input_prefix, template,
+                                      extension[1:])
+
+            assert_equals(type(written_files), list)
+            for written_file in written_files:
+                assert_equals(type(written_file), str)
+
+    # Allow use of template in the parent directory
+    with cd("examples/boilerplates"):
+        mol = pybel.readfile("xyz", "../water_dimer.xyz")
+        written_files = pnictogen(mol, "../water_dimer",
+                                  "../templates/EDA.ADF.in", "in")
+
+        assert_equals(written_files, ["../water_dimer_eda.in",
+                                      "../water_dimer_frag1.in",
+                                      "../water_dimer_frag2.in"])
 
 
 # TODO: create hello world template in a temporary file to test
@@ -171,7 +196,16 @@ optimize('scf')""")
     assert_equals(open("examples/water.input").read(), water_mol.write("zin"))
 
 
-def test_keywords_in_title():
+def test_update_data():
+    mol = pybel.readstring("smi", "[Ag+]")
+    assert_equals(mol.charge, 1)
+    assert_equals(mol.spin, 1)
+
+    update_data(mol, "spin=2 charge=0")
+    assert_equals(mol.charge, 0)
+    assert_equals(mol.spin, 2)
+
+    # Keywords in title
     main(["-g", "examples/boilerplates/Gaussian.gjf"])
     main(["examples/boilerplates/Gaussian.gjf", "examples/hydroxide.xyz"])
     assert_equals(open("examples/hydroxide.gjf").read(),

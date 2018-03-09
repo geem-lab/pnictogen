@@ -168,7 +168,7 @@ The following template uses both ``fragment()`` and ``xyz()`` functions to gener
 
     Fragments
     {% for frag in frags %}
-     frag{{ loop.index }} {{ input_name }}_frag{{ loop.index }}.t21
+     frag{{ loop.index }} {{ input_prefix }}_frag{{ loop.index }}.t21
     {% endfor %}
     End
 
