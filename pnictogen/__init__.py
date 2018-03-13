@@ -121,8 +121,8 @@ def main(argv=sys.argv[1:]):
                 print("{:s} written".format(written_file))
 
 
-def pnictogen(molecules, input_prefix, template, extension="inp",
-              available_helpers=available_helpers):
+def pnictogen(molecules, input_prefix, template, extension=None,
+              globals=available_helpers, **kwargs):
     """
     Generate inputs based on a template and a set of molecules
 
@@ -137,9 +137,15 @@ def pnictogen(molecules, input_prefix, template, extension="inp",
     template : str
         Path to Jinja2 template file, relative to the local directory
     extension : str, optional
-        File extension common to all generated input files
-    available_helpers : dict of functions, optional
-        Allowed functions within the template (see render_template)
+        File extension common to all generated input files. If not set, the
+        template path will be used to select one.
+    extensions : list, optional
+        A set of extensions that are directly passed to Jinja2
+    globals : dict of functions, optional
+        Jinja2 specification of functions available within the template (see
+        render_template).
+
+    Extra named arguments are passed directly to the template
 
     Returns
     -------
@@ -155,13 +161,16 @@ def pnictogen(molecules, input_prefix, template, extension="inp",
     >>> pnictogen(mol, "examples/co", "examples/boilerplates/ORCA.inp")
     ['examples/co.inp']
     """
+    if extension is None:
+        package, extension = os.path.basename(template).split(".")[-2:]
+
     written_files = []
 
     # TODO: add some keywords from command-line to context (like
     # "-k charge=-1" or from a yaml file)
     raw_rendered = render_template(template, input_prefix=input_prefix,
                                    molecules=list(molecules),
-                                   globals=available_helpers)
+                                   globals=globals, **kwargs)
 
     flag = None
     raw_rendered = raw_rendered.split('--@')
@@ -181,7 +190,7 @@ def pnictogen(molecules, input_prefix, template, extension="inp",
     return written_files
 
 
-def render_template(template, **context):
+def render_template(template, **kwargs):
     """
     Define template rendering with Jinja2
 
@@ -189,12 +198,12 @@ def render_template(template, **context):
     ----------
     template : str
         Path to Jinja2 template file, relative to the local directory
-    extensions : list
+    extensions : list, optional
         A set of extensions that are directly passed to Jinja2
-    globals : dict
-        Jinja2 specification of objects available within templates
+    globals : dict of functions, optional
+        Jinja2 specification of functions available within the template
 
-    Extra parameters are passed directly to the template
+    Extra named arguments are passed directly to the template
 
     Returns
     -------
@@ -225,8 +234,8 @@ def render_template(template, **context):
     $end
     <BLANKLINE>
     """
-    extensions = context.pop('extensions', [])
-    globals = context.pop('globals', {})
+    extensions = kwargs.pop('extensions', [])
+    globals = kwargs.pop('globals', {})
 
     # TODO: allow and test for templates inheritance (maybe adding something
     # like "~/.pnictogen/" to searchpath as well)
@@ -242,7 +251,7 @@ def render_template(template, **context):
     except TemplateNotFound:
         template_jinja = jinja_env.from_string(open(template).read())
 
-    return template_jinja.render(context)
+    return template_jinja.render(kwargs)
 
 
 def update_data(molecule, line,

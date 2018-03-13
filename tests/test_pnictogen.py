@@ -65,6 +65,9 @@ def test_pnictogen():
             for written_file in written_files:
                 assert_equals(type(written_file), str)
 
+            written_files2 = pnictogen(mol, input_prefix, template)
+            assert_equals(written_files, written_files2)
+
     # Allow use of template in the parent directory
     with cd("examples/boilerplates"):
         mol = pybel.readfile("xyz", "../water_dimer.xyz")
@@ -74,6 +77,12 @@ def test_pnictogen():
         assert_equals(written_files, ["../water_dimer_eda.in",
                                       "../water_dimer_frag1.in",
                                       "../water_dimer_frag2.in"])
+
+    mol = pybel.readfile("xyz", "examples/co.xyz")
+    written_files = pnictogen(mol, "examples/co",
+                              "examples/boilerplates/ORCA.inp", foo="bar")
+
+    assert_equals(written_files, ["examples/co.inp"])
 
 
 # TODO: create hello world template in a temporary file to test
