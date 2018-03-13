@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pybel
+import numpy as np
 
 # TODO: use mendeleev for periodic table
 # TODO: simple interface to MOPAC
@@ -225,5 +226,6 @@ def xyz(molecule, style="standard", flag=None):
 available_helpers = {
     "conformers": conformers,
     "fragment": fragment,
+    "np": np,
     "xyz": xyz,
 }
