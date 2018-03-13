@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
 import pybel
 import numpy as np
 
@@ -155,7 +156,7 @@ def fragment(molecule, indices=None):
     return [pybel.Molecule(frag) for frag in molecule.OBMol.Separate()]
 
 
-def xyz(molecule, style="standard", flag=None):
+def xyz(molecule, style="standard", flag=None, fixed_atoms=None):
     """
     Get cartesian coordinates for molecule
 
@@ -168,10 +169,13 @@ def xyz(molecule, style="standard", flag=None):
     flag : str, optional
         If style is "ADF", an extra column is added for naming this fragment
         (see examples below).
+    fixed_atoms : iterable object of int
+        If style is "MOPAC", the extra columns in output will change in order
+        to fix the cartesian coordinates of listed atoms.
 
     Returns
     -------
-    str
+    converted : str
         Molecular cartesian coordinates as string in the given style
 
     Examples
@@ -216,6 +220,11 @@ def xyz(molecule, style="standard", flag=None):
     elif style == "MOPAC":
         converted = molecule.write("mop")
         converted = converted.split("\n", 2)[2].strip()
+        if fixed_atoms is not None:
+            converted = converted.split("\n")
+            for i in fixed_atoms:
+                converted[i] = re.sub(' 1( |$)', ' 0\g<1>', converted[i])
+            converted = "\n".join(converted)
     else:
         raise KeyError
 
