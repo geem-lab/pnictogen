@@ -1,0 +1,23 @@
+sudo: false
+dist: trusty
+
+language: python
+python:
+  - 2.7
+  - 3.3
+  - 3.6
+
+addons:
+  apt:
+    packages:
+      - libopenbabel-dev
+      - swig
+
+before_install:
+  - pip install -r requirements.txt
+
+install:
+  - pip install .
+
+script:
+  - nosetests -v

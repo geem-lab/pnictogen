@@ -1,0 +1,6 @@
+nose
+parse
+PyYAML
+Jinja2
+openbabel
+git+https://github.com/cinfony/cinfony.git

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from setuptools import setup
+import setuptools
 
 version_file = open(os.path.join(".", "VERSION"))
 version = version_file.read().strip()
@@ -36,23 +36,16 @@ keywords = [
     'chemistry',
 ]
 
-# The list of packages to be installed.
-packages = [
-    'pnictogen',
-]
-
 install_requires = [
     'nose',
     'parse',
     'pyyaml',
     'jinja2',
+    'openbabel',
     'cinfony',
-    # 'openbabel',
 ]
 
-data_files = [('.', ['examples/*'])]
-
-setup(
+setuptools.setup(
     name='pnictogen',
     version=version,
     url='https://github.com/dudektria/pnictogen',
@@ -63,10 +56,10 @@ setup(
     description=doclines[0],
     long_description="\n".join(doclines[2:]),
     classifiers=classifiers.split("\n"),
-    packages=packages,
+    packages=setuptools.find_packages(exclude=['*test*']),
     keywords=keywords,
     install_requires=install_requires,
-    data_files=data_files,
+    include_package_data=True,
     test_suite='nose.collector',
     entry_points={
         'console_scripts': [
