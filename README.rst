@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/dudektria/pnictogen.svg?branch=master
+    :target: https://travis-ci.org/dudektria/pnictogen
+
 Welcome to pnictogen
 ====================
 
