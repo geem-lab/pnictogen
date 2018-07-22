@@ -4,10 +4,29 @@
 import pybel
 from nose.tools import assert_equals
 
-from pnictogen.helpers import fragment, xyz
+from pnictogen import main
+from pnictogen.helpers import conformers, fragment, xyz
 
 water_mol = list(pybel.readfile("xyz", "examples/water.xyz"))[0]
 dimer_mol = list(pybel.readfile("xyz", "examples/water_dimer.xyz"))[0]
+cyclohexanol_mol = list(pybel.readfile("xyz", "examples/cyclohexanol.xyz"))[0]
+pentane_mol = list(pybel.readfile("xyz", "examples/pentane.xyz"))[0]
+
+
+def test_conformers():
+    cyclohexanol_conformers = conformers(cyclohexanol_mol)
+    assert_equals(len(cyclohexanol_conformers), 1)
+
+    pentane_conformers = conformers(pentane_mol)
+    assert_equals(len(pentane_conformers), 7)
+
+    output = pybel.Outputfile("xyz", "examples/pentane_conformers.xyz",
+                              overwrite=True)
+    for mol in pentane_conformers:
+        output.write(mol)
+    output.close()
+    main(["examples/templates/opt.MOPAC.mop",
+          "examples/pentane_conformers.xyz"])
 
 
 def test_fragment():
@@ -40,7 +59,22 @@ H         -0.06802        1.00961        0.00000""")
 H          1.00961       -0.06802        0.00000       f=water
 H         -0.06802        1.00961        0.00000       f=water""")
 
+    assert_equals(xyz(water_mol, style="GAMESS"),
+                  """O      8.0      0.0584027061    0.0584027059    0.0000000000
+H      1.0      1.0096135406   -0.0680162466    0.0000000000
+H      1.0     -0.0680162466    1.0096135407    0.0000000000""")
+
     assert_equals(xyz(water_mol, style="MOPAC"),
                   """O   0.05840 1  0.05840 1  0.00000 1
 H   1.00961 1 -0.06802 1  0.00000 1
+H  -0.06802 1  1.00961 1  0.00000 1""")
+
+    assert_equals(xyz(water_mol, style="MOPAC", fixed_atoms=[0, 2]),
+                  """O   0.05840 0  0.05840 0  0.00000 0
+H   1.00961 1 -0.06802 1  0.00000 1
+H  -0.06802 0  1.00961 0  0.00000 0""")
+
+    assert_equals(xyz(water_mol, style="MOPAC", fixed_atoms=[1]),
+                  """O   0.05840 1  0.05840 1  0.00000 1
+H   1.00961 0 -0.06802 0  0.00000 0
 H  -0.06802 1  1.00961 1  0.00000 1""")

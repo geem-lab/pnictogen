@@ -22,8 +22,17 @@ packages:
 
 
   GAMESS:
-    boilerplate: |+
-      {{ molecules[0].write('gamin') }}
+    boilerplate: |+1
+      $CONTRL COORD=CART UNITS=ANGS $END
+
+      $DATA
+     {{ molecules[0].title }}
+     C1
+     {{ xyz(molecules[0], style="GAMESS") }}
+      $END
+
+
+
   GAMESSUK:
     boilerplate: |+
       {{ molecules[0].write('gukin') }}
@@ -61,7 +70,14 @@ packages:
       {{ molecules[0].write('mpqcin') }}
   NWChem:
     boilerplate: |+
-      {{ molecules[0].write('nw') }}
+      start molecule
+
+      title {{ molecules[0].title }}
+
+      geometry units angstroms print xyz autosym
+      {{ xyz(molecules[0]) }}
+      end
+
   ORCA:
     boilerplate: |+
       # {{ molecules[0].title }}

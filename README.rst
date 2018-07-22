@@ -41,12 +41,12 @@ pnictogen can currently create boilerplates for
 `GAMESS (US) <http://www.msg.ameslab.gov/GAMESS/GAMESS.html>`_,
 `GAMESS-UK <http://www.cfs.dl.ac.uk/>`_,
 `Gaussian <http://www.gaussian.com/>`_,
-`Jaguar <http://www.schrodinger.com/ProductDescription.php?mID=6&sID=9>`_,
+`Jaguar <https://www.schrodinger.com/jaguar>`_,
 `Molpro <http://www.molpro.net/>`_,
 `MOPAC <http://openmopac.net/>`_,
 `MPQC <http://www.mpqc.org/>`_,
 `NWChem <http://www.nwchem-sw.org/index.php/Main_Page>`_,
-`ORCA <http://www.thch.uni-bonn.de/tc/orca/>`_,
+`ORCA <https://orcaforum.cec.mpg.de/>`_,
 `Psi <http://psicode.org/>`_,
 `Q-Chem <http://q-chem.com/>`_
 and
@@ -105,12 +105,10 @@ Besides this, pnictogen also understands a special delimiter (``--@``) that allo
     examples/pentane_conformers_5.mop written
     examples/pentane_conformers_6.mop written
     examples/pentane_conformers_7.mop written
-    examples/pentane_conformers_8.mop written
-    examples/pentane_conformers_9.mop written
 
 The rest of the line after ``--@`` is aways added to the name of the inputs after an underscore (``_``).
 
-In the example above, ``examples/pentane_conformers.xyz`` contains nine conformers of pentane, so nine inputs were generated (the counting is provided by ``loop.index``):
+In the example above, ``examples/pentane_conformers.xyz`` contains seven conformers of pentane, so seven inputs were generated (the counting is provided by ``loop.index``):
 
 .. code:: bash
 
@@ -118,23 +116,25 @@ In the example above, ``examples/pentane_conformers.xyz`` contains nine conforme
     CHARGE=0 MS=0.0
     C5H12
 
-    C   2.49842 1 -0.31168 1 -0.01981 1
+    C   1.23923 1  1.46892 1 -1.23930 1
     C   1.24920 1  0.57161 1  0.00000 1
     C  -0.00000 1 -0.31179 1 -0.00000 1
     C  -1.24920 1  0.57161 1 -0.00000 1
-    C  -1.25904 1  1.44091 1 -1.25912 1
-    H   2.50545 1 -0.95092 1  0.86305 1
-    H   2.49134 1 -0.93096 1 -0.91678 1
-    H   3.38842 1  0.31762 1 -0.01981 1
-    H   1.25629 1  1.19089 1  0.89697 1
-    H   1.24217 1  1.21085 1 -0.88286 1
+    C  -2.49842 1 -0.31168 1  0.01981 1
+    H   1.23217 1  0.84960 1 -2.13625 1
+    H   0.34926 1  2.09811 1 -1.22516 1
+    H   2.12917 1  2.09831 1 -1.23936 1
+    H   2.13917 1 -0.05758 1 -0.01415 1
+    H   1.25625 1  1.19094 1  0.89694 1
     H  -0.00000 1 -0.94109 1 -0.89000 1
     H  -0.00000 1 -0.94109 1  0.89000 1
-    H  -2.13917 1 -0.05758 1  0.01408 1
-    H  -1.24214 1  1.21089 1  0.88283 1
-    H  -0.36907 1  2.07009 1 -1.27320 1
-    H  -1.26610 1  0.80162 1 -2.14194 1
-    H  -2.14898 1  2.07029 1 -1.25918 1
+    H  -1.24217 1  1.21085 1  0.88286 1
+    H  -1.25629 1  1.19089 1 -0.89697 1
+    H  -2.50545 1 -0.95092 1 -0.86305 1
+    H  -2.49134 1 -0.93096 1  0.91678 1
+    H  -3.38842 1  0.31762 1  0.01981 1
+
+pnictogen also has a helper ``conformers()``, which makes it even easier to do the above.
 
 Example: energy decomposition analysis (EDA) with ADF
 --------------------------------------------------------------
@@ -168,7 +168,7 @@ The following template uses both ``fragment()`` and ``xyz()`` functions to gener
 
     Fragments
     {% for frag in frags %}
-     frag{{ loop.index }} {{ input_name }}_frag{{ loop.index }}.t21
+     frag{{ loop.index }} {{ input_prefix }}_frag{{ loop.index }}.t21
     {% endfor %}
     End
 

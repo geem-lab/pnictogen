@@ -1,1 +1,8 @@
-{{ molecules[0].write('nw') }}
+start molecule
+
+title {{ molecules[0].title }}
+
+geometry units angstroms print xyz autosym
+{{ xyz(molecules[0]) }}
+end
+
