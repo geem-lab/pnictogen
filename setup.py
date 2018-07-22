@@ -42,7 +42,6 @@ install_requires = [
     'pyyaml',
     'jinja2',
     'openbabel',
-    'cinfony',
 ]
 
 setuptools.setup(

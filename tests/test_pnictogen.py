@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from glob import iglob
-from cinfony import pybel
+import pybel
 from nose.tools import assert_equals
 
 from pnictogen import argparser, main

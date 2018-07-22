@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from cinfony import pybel
+import pybel
 from nose.tools import assert_equals
 
 from pnictogen.helpers import fragment, xyz

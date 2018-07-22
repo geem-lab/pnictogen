@@ -8,7 +8,7 @@ import parse
 import argparse
 import pkg_resources
 from jinja2 import Environment, FileSystemLoader
-from cinfony import pybel
+import pybel
 
 from pnictogen.helpers import available_helpers
 

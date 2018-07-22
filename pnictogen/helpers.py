@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from cinfony import pybel
+import pybel
 
 # TODO: use mendeleev for periodic table
 # TODO: allow the generation of conformers without energy evaluations
