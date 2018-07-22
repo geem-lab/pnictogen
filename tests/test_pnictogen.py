@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from glob import iglob
-from cinfony import pybel
+import pybel
 from nose.tools import assert_equals
 
 from pnictogen import argparser, main
@@ -46,7 +46,7 @@ def test_conformers():
 
 
 def test_render_boilerplates():
-    water_mol = pybel.readfile("xyz", "examples/water.xyz").next()
+    water_mol = list(pybel.readfile("xyz", "examples/water.xyz"))[0]
 
     main(["-g", "examples/boilerplates/ADF.in"])
     main(["examples/boilerplates/ADF.in", "examples/water.xyz"])

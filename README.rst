@@ -76,8 +76,8 @@ Once you have a template, generating inputs is easy:
 (Wildcards are allowed, e.g., ``pnictogen new_template.ORCA.inp *.xyz`` works.)
 
 Since
-pnictogen is built on top of `Cinfony <http://cinfony.github.io/>`_, it is able to read anything `Open Babel <http://openbabel.org/wiki/Main_Page>`_ reads.
-Check the list of all available file formats `here <http://openbabel.org/docs/2.3.0/FileFormats/Overview.html>`_.
+pnictogen is built on top of `Pybel <https://open-babel.readthedocs.io/en/latest/UseTheLibrary/Python_PybelAPI.html>`_, so it is able to read anything `Open Babel <http://openbabel.org/wiki/Main_Page>`_ reads.
+Check the list of all available file formats `here <https://open-babel.readthedocs.io/en/latest/FileFormats/Overview.html>`_.
 
 Templates
 ---------

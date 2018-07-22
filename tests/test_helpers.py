@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from cinfony import pybel
+import pybel
 from nose.tools import assert_equals
 
 from pnictogen.helpers import fragment, xyz
 
-water_mol = pybel.readfile("xyz", "examples/water.xyz").next()
-dimer_mol = pybel.readfile("xyz", "examples/water_dimer.xyz").next()
+water_mol = list(pybel.readfile("xyz", "examples/water.xyz"))[0]
+dimer_mol = list(pybel.readfile("xyz", "examples/water_dimer.xyz"))[0]
 
 
 def test_fragment():
