@@ -33,7 +33,7 @@ def fragment(molecule, indices=None):
     --------
     By default, fragment simply returns all non-bonded fragments:
 
-    >>> dimer_mol = pybel.readfile("xyz", "examples/water_dimer.xyz").next()
+    >>> dimer_mol = list(pybel.readfile("xyz", "examples/water_dimer.xyz"))[0]
     >>> for water_mol in fragment(dimer_mol):
     ...     print(water_mol.write("xyz"))
     3
@@ -101,7 +101,7 @@ def xyz(molecule, style="standard", flag=None):
 
     Examples
     --------
-    >>> water_mol = pybel.readfile("xyz", "examples/water.xyz").next()
+    >>> water_mol = list(pybel.readfile("xyz", "examples/water.xyz"))[0]
     >>> print(xyz(water_mol, style="MOPAC"))
     O   0.05840 1  0.05840 1  0.00000 1
     H   1.00961 1 -0.06802 1  0.00000 1
