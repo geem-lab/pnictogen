@@ -1,5 +1,5 @@
 packages:
-  # TODO: add DALTON (not available through Open Babel)
+
   ADF:
     boilerplate: |+
       TITLE {{ molecules[0].title }}
@@ -20,6 +20,9 @@ packages:
       End
 
 
+  DALTON:
+    boilerplate: |+
+      {{ molecules[0].write('dalmol')}}
 
   GAMESS:
     boilerplate: |+1
