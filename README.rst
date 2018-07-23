@@ -41,6 +41,7 @@ Tutorial
 
 pnictogen can currently create boilerplates for
 `ADF <https://www.scm.com/product/adf/>`_,
+`DALTON <http://daltonprogram.org/>`_,
 `GAMESS (US) <http://www.msg.ameslab.gov/GAMESS/GAMESS.html>`_,
 `GAMESS-UK <http://www.cfs.dl.ac.uk/>`_,
 `Gaussian <http://www.gaussian.com/>`_,
