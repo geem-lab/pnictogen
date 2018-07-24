@@ -11,6 +11,9 @@ from pnictogen import argparser, main, pnictogen, update_data
 
 # Only testing xyz files because I trust Open Babel to handle other file types
 example_xyz_files = iglob("examples/*.xyz")
+
+if not os.path.exists("examples/boilerplates"):
+    os.makedirs("examples/boilerplates")
 boilerplates = iglob("examples/boilerplates/*")
 
 
@@ -80,7 +83,7 @@ def test_pnictogen():
 
     mol = pybel.readfile("xyz", "examples/co.xyz")
     written_files = pnictogen(mol, "examples/co",
-                              "examples/boilerplates/ORCA.inp", foo="bar")
+                              "examples/templates/ORCA.inp", foo="bar")
 
     assert_equals(written_files, ["examples/co.inp"])
 

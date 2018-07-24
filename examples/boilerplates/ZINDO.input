@@ -1,1 +1,0 @@
-{{ molecules[0].write('zin') }}

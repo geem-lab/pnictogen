@@ -84,9 +84,9 @@ def main(argv=sys.argv[1:]):
     the pnictogen function below for one that is), the following should work:
 
     >>> import pnictogen
-    >>> pnictogen.main(["-g", "examples/boilerplates/ORCA.inp"])
-    examples/boilerplates/ORCA.inp written
-    >>> pnictogen.main(["examples/boilerplates/ORCA.inp", "examples/co.xyz",
+    >>> pnictogen.main(["-g", "examples/templates/ORCA.inp"])
+    examples/templates/ORCA.inp written
+    >>> pnictogen.main(["examples/templates/ORCA.inp", "examples/co.xyz",
     ...                 "examples/water.xyz"])
     examples/co.inp written
     examples/water.inp written
@@ -158,7 +158,7 @@ def pnictogen(molecules, input_prefix, template, extension=None,
     example of use would be:
 
     >>> mol = pybel.readfile("xyz", "examples/co.xyz")
-    >>> pnictogen(mol, "examples/co", "examples/boilerplates/ORCA.inp")
+    >>> pnictogen(mol, "examples/co", "examples/templates/ORCA.inp")
     ['examples/co.inp']
     """
     if extension is None:
@@ -212,12 +212,12 @@ def render_template(template, **kwargs):
 
     Examples
     --------
-    >>> main(["-g", "examples/boilerplates/QChem.in"])
-    examples/boilerplates/QChem.in written
+    >>> main(["-g", "examples/templates/QChem.in"])
+    examples/templates/QChem.in written
     >>> context = {
     ...     "molecules": list(pybel.readfile("xyz", "examples/water.xyz"))
     ... }
-    >>> print(render_template("examples/boilerplates/QChem.in", **context))
+    >>> print(render_template("examples/templates/QChem.in", **context))
     $comment
     PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
     $end

@@ -1,7 +1,0 @@
-# {{ molecules[0].title }}
-! Opt
-
-* xyz {{ molecules[0].charge }} {{ molecules[0].spin }}
-{{ xyz(molecules[0]) }}
-*
-
