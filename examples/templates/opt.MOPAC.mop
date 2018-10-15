@@ -1,8 +1,8 @@
-{% for molecule in molecules %}
+{% for molecule in molecule %}
 --@{{ loop.index }}
-CHARGE={{ molecule.charge }} MS={{ (molecule.spin - 1)/2 }}
-{{ molecule.title }}
+CHARGE={{ molecule.charge }} MS={{ (molecule.mult - 1)/2 }}
+{{ molecule.name }}
 
-{{ xyz(molecule, style="MOPAC") }}
+{{ molecule.to_string("mop") }}
 
 {% endfor %}
