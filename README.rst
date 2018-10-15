@@ -11,11 +11,11 @@ It is based on Jinja2_, a modern and friendly templating language for Python:
 .. code:: bash
 
     $ cat new_template.ORCA.inp
-    # {{ molecules[0].title }}
+    # {{ molecule.name }}
     ! Opt
 
-    * xyz {{ molecules[0].charge }} {{ molecules[0].spin }}
-    {{ xyz(molecules[0]) }}
+    * xyz {{ molecule.charge }} {{ molecule.mult }}
+    {{ molecule.to_string("xyz") }}
     *
     $ pnictogen new_template.ORCA.inp examples/water.xyz
     examples/water.inp written
@@ -61,10 +61,10 @@ and
     $ pnictogen -g new_template.MOPAC.mop
     new_template.MOPAC.mop written
     $ cat new_template.MOPAC.mop
-    CHARGE={{ molecules[0].charge }} MS={{ (molecules[0].spin - 1)/2 }}
-    {{ molecules[0].title }}
+    CHARGE={{ molecule.charge }} MS={{ (molecule.mult - 1)/2 }}
+    {{ molecule.name }}
 
-    {{ xyz(molecules[0], style="MOPAC") }}
+    {{ molecule.to_string("mop") }}
 
 (``pnictogen -g new_template.inp`` creates a blank file.)
 
@@ -93,12 +93,12 @@ Besides this, pnictogen also understands a special delimiter (``--@``) that allo
 .. code:: bash
 
     $ cat examples/templates/opt.MOPAC.mop
-    {% for molecule in molecules %}
+    {% for molecule in molecule %}
     --@{{ loop.index }}
-    CHARGE={{ molecule.charge }} MS={{ (molecule.spin - 1)/2 }}
-    {{ molecule.title }}
+    CHARGE={{ molecule.charge }} MS={{ (molecule.mult - 1)/2 }}
+    {{ molecule.name }}
 
-    {{ xyz(molecule, style="MOPAC") }}
+    {{ molecule.to_string("mop") }}
 
     {% endfor %}
     $ pnictogen examples/templates/opt.MOPAC.mop examples/pentane_conformers.xyz
@@ -138,8 +138,6 @@ In the example above, ``examples/pentane_conformers.xyz`` contains seven conform
     H  -2.49134 1 -0.93096 1  0.91678 1
     H  -3.38842 1  0.31762 1  0.01981 1
 
-pnictogen also has a helper ``conformers()``, which makes it even easier to do the above.
-
 Example: energy decomposition analysis (EDA) with ADF
 --------------------------------------------------------------
 
@@ -157,16 +155,16 @@ Imagine we want to do `energy decomposition analysis <https://doi.org/10.1002/wc
         H          0.64083       -0.57862       -2.71449
         H         -0.26065        0.64232       -2.62218
 
-The following template uses both ``fragment()`` and ``xyz()`` functions to generate ADF inputs in bulk:
+The following template uses both ``Atoms.split()`` and ``Atoms.to_string("xyz")`` functions to generate ADF inputs in bulk:
 
 .. code:: bash
 
     $ cat EDA.ADF.in
-    {% set frags = fragment(molecules[0], [range(3), range(3, 6)]) %}
+    {% set frags = molecule.split([range(3), range(3, 6)]) %}
     --@eda
     ATOMS Cartesian
     {% for frag in frags %}
-    {{ xyz(frag, "ADF", "frag{}".format(loop.index)) }}
+    {{ frag.to_string("xyz", dialect="adf", fragment_id="f{}".format(loop.index)) }}
     {% endfor %}
     End
 
@@ -179,7 +177,7 @@ The following template uses both ``fragment()`` and ``xyz()`` functions to gener
     {% for frag in frags %}
     --@frag{{ loop.index }}
     ATOMS Cartesian
-    {{ xyz(frag) }}
+    {{ frag.to_string("xyz") }}
     End
 
     {% endfor %}

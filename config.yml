@@ -2,15 +2,15 @@ packages:
 
   ADF:
     boilerplate: |+
-      TITLE {{ molecules[0].title }}
+      TITLE {{ molecule.name }}
 
-      CHARGE {{ molecules[0].charge }}  {{ molecules[0].spin - 1 }}
+      CHARGE {{ molecule.charge }}  {{ molecule.mult - 1 }}
 
       Number of atoms
-       {{ molecules[0].atoms|count }}
+       {{ molecule.natom }}
 
       ATOMS Cartesian
-      {{ xyz(molecules[0]) }}
+      {{ molecule.to_string("xyz") }}
       End
 
       Basis
@@ -23,88 +23,88 @@ packages:
 
   DALTON:
     boilerplate: |+
-      {{ molecules[0].write('dalmol')}}
+      {{ molecule.to_string('dalmol')}}
 
   GAMESS:
     boilerplate: |+1
       $CONTRL COORD=CART UNITS=ANGS $END
 
       $DATA
-     {{ molecules[0].title }}
+     {{ molecule.name }}
      C1
-     {{ xyz(molecules[0], style="GAMESS") }}
+     {{ molecule.to_string("gamin") }}
       $END
 
 
 
   GAMESSUK:
     boilerplate: |+
-      {{ molecules[0].write('gukin') }}
+      {{ molecule.to_string('gukin') }}
   # Gaussian:
     # boilerplate: |+
-      # {{ molecules[0].write('gzmat') }}
+      # {{ molecule.to_string('gzmat') }}
   Gaussian:
     boilerplate: |+
       #Put Keywords Here, check Charge and Multiplicity.
 
-       {{ molecules[0].title }}
+       {{ molecule.name }}
 
-      {{ molecules[0].charge }}  {{ molecules[0].spin }}
-      {{ xyz(molecules[0]) }}
+      {{ molecule.charge }}  {{ molecule.mult }}
+      {{ molecule.to_string("xyz") }}
 
 
   Jaguar:
     boilerplate: |+
-      {{ molecules[0].write('jin') }}
+      {{ molecule.to_string('jin') }}
   Molpro:
     boilerplate: |+
-      {{ molecules[0].write('mp') }}
+      {{ molecule.to_string('mp') }}
   # MOPAC:
     # boilerplate: |+
-      # {{ molecules[0].write('mopin') }}
+      # {{ molecule.to_string('mopin') }}
   MOPAC:
     boilerplate: |+
-      CHARGE={{ molecules[0].charge }} MS={{ (molecules[0].spin - 1)/2 }}
-      {{ molecules[0].title }}
+      CHARGE={{ molecule.charge }} MS={{ (molecule.mult - 1)/2 }}
+      {{ molecule.name }}
 
-      {{ xyz(molecules[0], style="MOPAC") }}
+      {{ molecule.to_string("mop") }}
 
   MPQC:
     boilerplate: |+
-      {{ molecules[0].write('mpqcin') }}
+      {{ molecule.to_string('mpqcin') }}
   NWChem:
     boilerplate: |+
       start molecule
 
-      title {{ molecules[0].title }}
+      title {{ molecule.name }}
 
       geometry units angstroms print xyz autosym
-      {{ xyz(molecules[0]) }}
+      {{ molecule.to_string("xyz") }}
       end
 
   ORCA:
     boilerplate: |+
-      # {{ molecules[0].title }}
+      # {{ molecule.name }}
       ! Opt
 
-      * xyz {{ molecules[0].charge }} {{ molecules[0].spin }}
-      {{ xyz(molecules[0]) }}
+      * xyz {{ molecule.charge }} {{ molecule.mult }}
+      {{ molecule.to_string("xyz") }}
       *
 
   Psi:
     boilerplate: |+
-      # {{ molecules[0].title }}
+      # {{ molecule.name }}
 
       molecule {
-      {{ molecules[0].charge }} {{ molecules[0].spin }}
-      {{ xyz(molecules[0]) }}
+      {{ molecule.charge }} {{ molecule.mult }}
+      {{ molecule.to_string("xyz") }}
       units angstrom
       }
 
       optimize('scf')
   QChem:
     boilerplate: |+
-      {{ molecules[0].write('qcin') }}
+      {{ molecule.to_string('qcin') }}
   ZINDO:
     boilerplate: |+
-      {{ molecules[0].write('zin') }}
+      {{ molecule.to_string('zin') }}
