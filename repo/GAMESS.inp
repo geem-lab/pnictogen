@@ -1,0 +1,10 @@
+ $CONTRL COORD=CART UNITS=ANGS $END
+
+ $DATA
+{{ molecule.name }}
+C1
+{{ molecule.to_string("gamin") }}
+ $END
+
+
+

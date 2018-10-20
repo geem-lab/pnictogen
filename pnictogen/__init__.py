@@ -5,22 +5,23 @@
 
 import os
 import sys
-import yaml
 import numpy as np
 import argparse
 import pkg_resources
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from pyrrole import atoms
 
+__version__ = pkg_resources.require(__name__)[0].version
+
 # This dict is set to globals prior to template renderization
 AVAILABLE_HELPERS = {
     "np": np,
 }
 
-__version__ = pkg_resources.require(__name__)[0].version
-
-with open(os.path.join(os.path.dirname(__file__), "../config.yml")) as stream:
-    config = yaml.load(stream)
+REPOSITORY_PATH = os.path.join(os.path.dirname(__file__), "../repo")
+REPOSITORY = \
+    {os.path.splitext(filename)[0]: os.path.join(REPOSITORY_PATH, filename)
+     for filename in os.listdir(REPOSITORY_PATH)}
 
 
 def argparser():
@@ -64,7 +65,7 @@ def argparser():
         help="""template file.
         "ext" can be anything.
         "package" might be one of the following:
-        {}.""".format(", ".join(config["packages"].keys())))
+        {}.""".format(", ".join(REPOSITORY.keys())))
     parser.add_argument(
         "descriptors", metavar="descriptor.ext", nargs="*",
         help="""files describing molecules, which are read using Open Babel
@@ -89,12 +90,12 @@ def main(argv=sys.argv[1:]):
     the pnictogen function below for one that is), the following should work:
 
     >>> import pnictogen
-    >>> pnictogen.main(["-g", "examples/templates/ORCA.inp"])
-    examples/templates/ORCA.inp written
-    >>> pnictogen.main(["examples/templates/ORCA.inp", "examples/co.xyz",
-    ...                 "examples/water.xyz"])
-    examples/co.inp written
-    examples/water.inp written
+    >>> pnictogen.main(["-g", "repo/ORCA.inp"])
+    repo/ORCA.inp written
+    >>> pnictogen.main(["repo/ORCA.inp", "data/co.xyz",
+    ...                 "data/water.xyz"])
+    data/co.inp written
+    data/water.inp written
 
     This is exactly as if pnictogen were called from the command-line.
 
@@ -104,9 +105,10 @@ def main(argv=sys.argv[1:]):
     package, extension = os.path.basename(args.template).split(".")[-2:]
 
     if args.generate:
+        with open(REPOSITORY[package], "r") as stream:
+            content = stream.read()
         with open(args.template, "w") as stream:
-            if package in config["packages"]:
-                stream.write(config["packages"][package]["boilerplate"])
+            stream.write(content)
         print("{:s} written".format(args.template))
     else:
         for descriptor in args.descriptors:
@@ -156,9 +158,9 @@ def pnictogen(molecule, input_prefix, template, extension=None,
     This is the function you would call from within Python code. A simple
     example of use would be:
 
-    >>> mol = atoms.read_pybel("examples/co.xyz")
-    >>> pnictogen(mol, "examples/co", "examples/templates/ORCA.inp")
-    ['examples/co.inp']
+    >>> mol = atoms.read_pybel("data/co.xyz")
+    >>> pnictogen(mol, "data/co", "repo/ORCA.inp")
+    ['data/co.inp']
 
     """
     if extension is None:
@@ -211,14 +213,14 @@ def render_template(template, **kwargs):
 
     Examples
     --------
-    >>> main(["-g", "examples/templates/QChem.in"])
-    examples/templates/QChem.in written
+    >>> main(["-g", "repo/QChem.in"])
+    repo/QChem.in written
     >>> context = {
-    ...     "molecule": atoms.read_pybel("examples/water.xyz")
+    ...     "molecule": atoms.read_pybel("data/water.xyz")
     ... }
-    >>> print(render_template("examples/templates/QChem.in", **context))
+    >>> print(render_template("repo/QChem.in", **context))
     $comment
-    examples/water.xyz
+    data/water.xyz
     $end
     <BLANKLINE>
     $molecule

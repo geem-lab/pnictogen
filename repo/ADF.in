@@ -1,0 +1,19 @@
+TITLE {{ molecule.name }}
+
+CHARGE {{ molecule.charge }}  {{ molecule.mult - 1 }}
+
+Number of atoms
+ {{ molecule.natom }}
+
+ATOMS Cartesian
+{{ molecule.to_string("xyz") }}
+End
+
+Basis
+End
+
+Geometry
+End
+
+
+

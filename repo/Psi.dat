@@ -1,0 +1,9 @@
+# {{ molecule.name }}
+
+molecule {
+{{ molecule.charge }} {{ molecule.mult }}
+{{ molecule.to_string("xyz") }}
+units angstrom
+}
+
+optimize('scf')

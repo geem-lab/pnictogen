@@ -17,9 +17,9 @@ It is based on Jinja2_, a modern and friendly templating language for Python:
     * xyz {{ molecule.charge }} {{ molecule.mult }}
     {{ molecule.to_string("xyz") }}
     *
-    $ pnictogen new_template.ORCA.inp examples/water.xyz
-    examples/water.inp written
-    $ cat examples/water.inp
+    $ pnictogen new_template.ORCA.inp data/water.xyz
+    data/water.inp written
+    $ cat data/water.inp
     # A water molecule
     ! Opt
 
@@ -73,9 +73,9 @@ Once you have a template, generating inputs is easy:
 
 .. code:: bash
 
-    $ pnictogen new_template.ORCA.inp examples/co.xyz examples/water.xyz
-    examples/co.inp written
-    examples/water.inp written
+    $ pnictogen new_template.ORCA.inp data/co.xyz data/water.xyz
+    data/co.inp written
+    data/water.inp written
 
 (Wildcards are allowed, e.g., ``pnictogen new_template.ORCA.inp *.xyz`` works.)
 
@@ -92,7 +92,7 @@ Besides this, pnictogen also understands a special delimiter (``--@``) that allo
 
 .. code:: bash
 
-    $ cat examples/templates/opt.MOPAC.mop
+    $ cat repo/MOPAC.mop
     {% for molecule in molecule %}
     --@{{ loop.index }}
     CHARGE={{ molecule.charge }} MS={{ (molecule.mult - 1)/2 }}
@@ -101,22 +101,22 @@ Besides this, pnictogen also understands a special delimiter (``--@``) that allo
     {{ molecule.to_string("mop") }}
 
     {% endfor %}
-    $ pnictogen examples/templates/opt.MOPAC.mop examples/pentane_conformers.xyz
-    examples/pentane_conformers_1.mop written
-    examples/pentane_conformers_2.mop written
-    examples/pentane_conformers_3.mop written
-    examples/pentane_conformers_4.mop written
-    examples/pentane_conformers_5.mop written
-    examples/pentane_conformers_6.mop written
-    examples/pentane_conformers_7.mop written
+    $ pnictogen repo/MOPAC.mop data/pentane_conformers.xyz
+    data/pentane_conformers_1.mop written
+    data/pentane_conformers_2.mop written
+    data/pentane_conformers_3.mop written
+    data/pentane_conformers_4.mop written
+    data/pentane_conformers_5.mop written
+    data/pentane_conformers_6.mop written
+    data/pentane_conformers_7.mop written
 
 The rest of the line after ``--@`` is aways added to the name of the inputs after an underscore (``_``).
 
-In the example above, ``examples/pentane_conformers.xyz`` contains seven conformers of pentane, so seven inputs were generated (the counting is provided by ``loop.index``):
+In the example above, ``data/pentane_conformers.xyz`` contains seven conformers of pentane, so seven inputs were generated (the counting is provided by ``loop.index``):
 
 .. code:: bash
 
-    $ cat examples/pentane_conformers_5.mop
+    $ cat data/pentane_conformers_5.mop
     CHARGE=0 MS=0.0
     C5H12
 
@@ -145,7 +145,7 @@ Imagine we want to do `energy decomposition analysis <https://doi.org/10.1002/wc
 
 .. code:: bash
 
-        $ cat water_dimer.xyz
+        $ cat water-dimer.xyz
         6
 
         O          0.12908       -0.26336        0.64798
@@ -170,42 +170,42 @@ The following template uses both ``Atoms.split()`` and ``Atoms.to_string("xyz")`
 
     Fragments
     {% for frag in frags %}
-     frag{{ loop.index }} {{ input_prefix }}_frag{{ loop.index }}.t21
+     f{{ loop.index }} {{ input_prefix }}_f{{ loop.index }}.t21
     {% endfor %}
     End
 
     {% for frag in frags %}
-    --@frag{{ loop.index }}
+    --@f{{ loop.index }}
     ATOMS Cartesian
     {{ frag.to_string("xyz") }}
     End
 
     {% endfor %}
-    $ pnictogen EDA.ADF.in examples/water_dimer.xyz
-    examples/water_dimer_eda.in written
-    examples/water_dimer_frag1.in written
-    examples/water_dimer_frag2.in written
+    $ pnictogen EDA.ADF.in data/water-dimer.xyz
+    data/water-dimer_eda.in written
+    data/water-dimer_f1.in written
+    data/water-dimer_f2.in written
 
 The above creates inputs like the following:
 
 .. code:: bash
 
-    $ cat water_dimer_eda.in
+    $ cat water-dimer_eda.in
     ATOMS Cartesian
-    O          0.12908       -0.26336        0.64798       f=frag1
-    H          0.89795        0.28805        0.85518       f=frag1
-    H          0.10833       -0.20468       -0.33302       f=frag1
-    O          0.31020        0.07569       -2.07524       f=frag2
-    H          0.64083       -0.57862       -2.71449       f=frag2
-    H         -0.26065        0.64232       -2.62218       f=frag2
+    O          0.12908       -0.26336        0.64798       f=f1
+    H          0.89795        0.28805        0.85518       f=f1
+    H          0.10833       -0.20468       -0.33302       f=f1
+    O          0.31020        0.07569       -2.07524       f=f2
+    H          0.64083       -0.57862       -2.71449       f=f2
+    H         -0.26065        0.64232       -2.62218       f=f2
     End
 
     Fragments
-    frag1 examples/water_dimer_frag1.t21
-    frag2 examples/water_dimer_frag2.t21
+    f1 data/water-dimer_f1.t21
+    f2 data/water-dimer_f2.t21
     End
 
-    $ cat water_dimer_frag1.in
+    $ cat water-dimer_f1.in
     ATOMS Cartesian
     O          0.12908       -0.26336        0.64798
     H          0.89795        0.28805        0.85518
