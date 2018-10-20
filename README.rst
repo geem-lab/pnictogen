@@ -36,6 +36,23 @@ pnictogen is the big brother of nitrogen_, hence the
 .. _nitrogen: https://github.com/chemical-scripts/nitrogen
 .. _Jinja2: http://jinja.pocoo.org/docs/latest/
 
+Installation
+------------
+
+You can get pnictogen directly from PyPI:
+
+.. code:: bash
+
+    $ pip install -U pnictogen
+
+The above will install the the version from PyPI, which is recommended.
+
+For the development version, clone this repository and run:
+
+.. code:: bash
+
+    $ pip install -U -e .
+
 Tutorial
 --------
 
