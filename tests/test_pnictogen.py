@@ -13,11 +13,9 @@ from contextlib import contextmanager
 from pnictogen import argparser, main, pnictogen
 
 # Only testing xyz files because I trust Open Babel to handle other file types
-example_xyz_files = iglob("examples/*.xyz")
+example_xyz_files = iglob("data/*.xyz")
 
-if not os.path.exists("examples/boilerplates"):
-    os.makedirs("examples/boilerplates")
-boilerplates = iglob("examples/boilerplates/*")
+templates = iglob("repo/*")
 
 
 @contextmanager
@@ -36,7 +34,7 @@ def cd(newdir):
 
 def test_argparser():
     """Test if argparser works."""
-    for template in boilerplates:
+    for template in templates:
         argv = [template] + list(example_xyz_files)
 
         parser = argparser()
@@ -45,7 +43,7 @@ def test_argparser():
 
 def test_main():
     """Test if main works."""
-    for template in boilerplates:
+    for template in templates:
         main(["-g", template])
 
         # One at a time
@@ -56,13 +54,13 @@ def test_main():
         main([template] + list(example_xyz_files))
 
     # Allow use of template in the parent directory
-    with cd("examples/boilerplates"):
-        main(["../templates/EDA.ADF.in", "../water_dimer.xyz"])
+    with cd("data"):
+        main(["../repo/EDA.ADF.in", "water-dimer.xyz"])
 
 
 def test_pnictogen():
     """Test if pnictogen works."""
-    for template in boilerplates:
+    for template in templates:
         template_prefix, extension = os.path.splitext(template)
         for xyz_file in example_xyz_files:
             input_prefix, xyz_file_extension = os.path.splitext(xyz_file)
@@ -79,20 +77,20 @@ def test_pnictogen():
             assert_equals(written_files, written_files2)
 
     # Allow use of template in the parent directory
-    with cd("examples/boilerplates"):
-        mol = atoms.read_pybel("../water_dimer.xyz")
-        written_files = pnictogen(mol, "../water_dimer",
-                                  "../templates/EDA.ADF.in", "in")
+    with cd("repo"):
+        mol = atoms.read_pybel("../data/water-dimer.xyz")
+        written_files = pnictogen(mol, "../data/water-dimer",
+                                  "EDA.ADF.in", "in")
 
-        assert_equals(written_files, ["../water_dimer_eda.in",
-                                      "../water_dimer_f1.in",
-                                      "../water_dimer_f2.in"])
+        assert_equals(written_files, ["../data/water-dimer_eda.in",
+                                      "../data/water-dimer_f1.in",
+                                      "../data/water-dimer_f2.in"])
 
-    mol = atoms.read_pybel("examples/co.xyz")
-    written_files = pnictogen(mol, "examples/co",
-                              "examples/templates/ORCA.inp", foo="bar")
+    mol = atoms.read_pybel("data/co.xyz")
+    written_files = pnictogen(mol, "data/co",
+                              "repo/ORCA.inp", foo="bar")
 
-    assert_equals(written_files, ["examples/co.inp"])
+    assert_equals(written_files, ["data/co.inp"])
 
 
 # TODO: create hello world template in a temporary file to test
@@ -101,22 +99,22 @@ def test_pnictogen():
 #     pass
 
 
-def test_render_boilerplates():
-    """Test if boilerplates are correctly rendered."""
-    water_mol = atoms.read_pybel("examples/water.xyz")
+def test_render_templates():
+    """Test if templates are correctly rendered."""
+    water_mol = atoms.read_pybel("data/water.xyz")
 
-    main(["-g", "examples/boilerplates/ADF.in"])
-    main(["examples/boilerplates/ADF.in", "examples/water.xyz"])
-    assert_equals(open("examples/water.in").read().strip(),
+    main(["-g", "repo/ADF.in"])
+    main(["repo/ADF.in", "data/water.xyz"])
+    assert_equals(open("data/water.in").read().strip(),
                   water_mol.to_string("adf"))
 
-    main(["-g", "examples/boilerplates/GAMESS.inp"])
-    main(["examples/boilerplates/GAMESS.inp", "examples/water.xyz"])
-    assert_equals(open("examples/water.inp").read(),
+    main(["-g", "repo/GAMESS.inp"])
+    main(["repo/GAMESS.inp", "data/water.xyz"])
+    assert_equals(open("data/water.inp").read(),
                   """ $CONTRL COORD=CART UNITS=ANGS $END
 
  $DATA
-examples/water.xyz
+data/water.xyz
 C1
 O      8.0      0.0584027061    0.0584027059    0.0000000000
 H      1.0      1.0096135406   -0.0680162466    0.0000000000
@@ -126,17 +124,17 @@ H      1.0     -0.0680162466    1.0096135407    0.0000000000
 
 """)
 
-    main(["-g", "examples/boilerplates/GAMESSUK.inp"])
-    main(["examples/boilerplates/GAMESSUK.inp", "examples/water.xyz"])
-    assert_equals(open("examples/water.inp").read(),
+    main(["-g", "repo/GAMESSUK.inp"])
+    main(["repo/GAMESSUK.inp", "data/water.xyz"])
+    assert_equals(open("data/water.inp").read(),
                   water_mol.to_string("gukin"))
 
-    main(["-g", "examples/boilerplates/Gaussian.gjf"])
-    main(["examples/boilerplates/Gaussian.gjf", "examples/water.xyz"])
-    assert_equals(open("examples/water.gjf").read(),
+    main(["-g", "repo/Gaussian.gjf"])
+    main(["repo/Gaussian.gjf", "data/water.xyz"])
+    assert_equals(open("data/water.gjf").read(),
                   """#Put Keywords Here, check Charge and Multiplicity.
 
- examples/water.xyz
+ data/water.xyz
 
 0  1
 O          0.05840        0.05840        0.00000
@@ -145,35 +143,35 @@ H         -0.06802        1.00961        0.00000
 
 """)
 
-    main(["-g", "examples/boilerplates/Jaguar.in"])
-    main(["examples/boilerplates/Jaguar.in", "examples/water.xyz"])
-    assert_equals(open("examples/water.in").read(), water_mol.to_string("jin"))
+    main(["-g", "repo/Jaguar.in"])
+    main(["repo/Jaguar.in", "data/water.xyz"])
+    assert_equals(open("data/water.in").read(), water_mol.to_string("jin"))
 
-    main(["-g", "examples/boilerplates/Molpro.inp"])
-    main(["examples/boilerplates/Molpro.inp", "examples/water.xyz"])
-    assert_equals(open("examples/water.inp").read(), water_mol.to_string("mp"))
+    main(["-g", "repo/Molpro.inp"])
+    main(["repo/Molpro.inp", "data/water.xyz"])
+    assert_equals(open("data/water.inp").read(), water_mol.to_string("mp"))
 
-    main(["-g", "examples/boilerplates/MOPAC.mop"])
-    main(["examples/boilerplates/MOPAC.mop", "examples/water.xyz"])
-    assert_equals(open("examples/water.mop").read(),
+    main(["-g", "repo/MOPAC.mop"])
+    main(["repo/MOPAC.mop", "data/water.xyz"])
+    assert_equals(open("data/water.mop").read(),
                   """CHARGE=0 MS=0.0
-examples/water.xyz
+data/water.xyz
 
 O   0.05840 1  0.05840 1  0.00000 1
 H   1.00961 1 -0.06802 1  0.00000 1
 H  -0.06802 1  1.00961 1  0.00000 1
 """)
 
-    main(["-g", "examples/boilerplates/MPQC.in"])
-    main(["examples/boilerplates/MPQC.in", "examples/water.xyz"])
-    assert_equals(open("examples/water.in").read(),
+    main(["-g", "repo/MPQC.in"])
+    main(["repo/MPQC.in", "data/water.xyz"])
+    assert_equals(open("data/water.in").read(),
                   water_mol.to_string("mpqcin"))
 
-    main(["-g", "examples/boilerplates/NWChem.nw"])
-    main(["examples/boilerplates/NWChem.nw", "examples/water.xyz"])
-    assert_equals(open("examples/water.nw").read(), """start molecule
+    main(["-g", "repo/NWChem.nw"])
+    main(["repo/NWChem.nw", "data/water.xyz"])
+    assert_equals(open("data/water.nw").read(), """start molecule
 
-title examples/water.xyz
+title data/water.xyz
 
 geometry units angstroms print xyz autosym
 O          0.05840        0.05840        0.00000
@@ -182,10 +180,10 @@ H         -0.06802        1.00961        0.00000
 end
 """)
 
-    main(["-g", "examples/boilerplates/ORCA.inp"])
-    main(["examples/boilerplates/ORCA.inp", "examples/water.xyz"])
-    assert_equals(open("examples/water.inp").read(),
-                  """# examples/water.xyz
+    main(["-g", "repo/ORCA.inp"])
+    main(["repo/ORCA.inp", "data/water.xyz"])
+    assert_equals(open("data/water.inp").read(),
+                  """# data/water.xyz
 ! Opt
 
 * xyz 0 1
@@ -195,10 +193,10 @@ H         -0.06802        1.00961        0.00000
 *
 """)
 
-    main(["-g", "examples/boilerplates/Psi.dat"])
-    main(["examples/boilerplates/Psi.dat", "examples/water.xyz"])
-    assert_equals(open("examples/water.dat").read(),
-                  """# examples/water.xyz
+    main(["-g", "repo/Psi.dat"])
+    main(["repo/Psi.dat", "data/water.xyz"])
+    assert_equals(open("data/water.dat").read(),
+                  """# data/water.xyz
 
 molecule {
 0 1
@@ -210,22 +208,22 @@ units angstrom
 
 optimize('scf')""")
 
-    main(["-g", "examples/boilerplates/QChem.in"])
-    main(["examples/boilerplates/QChem.in", "examples/water.xyz"])
-    assert_equals(open("examples/water.in").read(),
+    main(["-g", "repo/QChem.in"])
+    main(["repo/QChem.in", "data/water.xyz"])
+    assert_equals(open("data/water.in").read(),
                   water_mol.to_string("qcin"))
 
-    main(["-g", "examples/boilerplates/ZINDO.input"])
-    main(["examples/boilerplates/ZINDO.input", "examples/water.xyz"])
-    assert_equals(open("examples/water.input").read(),
+    main(["-g", "repo/ZINDO.input"])
+    main(["repo/ZINDO.input", "data/water.xyz"])
+    assert_equals(open("data/water.input").read(),
                   water_mol.to_string("zin"))
 
 
 def test_example_eda_adf():
     """Test example for EDA in ADF."""
-    main(["examples/templates/EDA.ADF.in", "examples/water_dimer.xyz"])
-    assert_equals(open("examples/water_dimer_eda.in").read(),
-                  """TITLE examples/water_dimer.xyz eda
+    main(["repo/EDA.ADF.in", "data/water-dimer.xyz"])
+    assert_equals(open("data/water-dimer_eda.in").read(),
+                  """TITLE data/water-dimer.xyz eda
 
 CHARGE 0  0
 
@@ -242,8 +240,8 @@ H          0.64083       -0.57862       -2.71449       f=f2
 End
 
 Fragments
- f1 examples/water_dimer_f1.t21
- f2 examples/water_dimer_f2.t21
+ f1 data/water-dimer_f1.t21
+ f2 data/water-dimer_f2.t21
 End
 
 Basis
@@ -253,8 +251,8 @@ Geometry
 End
 
 """)
-    assert_equals(open("examples/water_dimer_f1.in").read(),
-                  """TITLE examples/water_dimer.xyz f1
+    assert_equals(open("data/water-dimer_f1.in").read(),
+                  """TITLE data/water-dimer.xyz f1
 
 CHARGE 0  0
 
@@ -274,8 +272,8 @@ Geometry
 End
 
 """)
-    assert_equals(open("examples/water_dimer_f2.in").read(),
-                  """TITLE examples/water_dimer.xyz f2
+    assert_equals(open("data/water-dimer_f2.in").read(),
+                  """TITLE data/water-dimer.xyz f2
 
 CHARGE 0  0
 
@@ -299,9 +297,9 @@ End
 
 def test_example_fragments_orca():
     """Test if fragmentation works with ORCA inputs."""
-    main(["examples/templates/fragments.ORCA.inp", "examples/water_dimer.xyz"])
-    assert_equals(open("examples/water_dimer.inp").read(),
-                  """# examples/water_dimer.xyz
+    main(["repo/fragments.ORCA.inp", "data/water-dimer.xyz"])
+    assert_equals(open("data/water-dimer.inp").read(),
+                  """# data/water-dimer.xyz
 ! Opt
 
 * xyz 0 1

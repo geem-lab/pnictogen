@@ -1,0 +1,8 @@
+start molecule
+
+title {{ molecule.name }}
+
+geometry units angstroms print xyz autosym
+{{ molecule.to_string("xyz") }}
+end
+

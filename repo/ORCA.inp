@@ -1,0 +1,7 @@
+# {{ molecule.name }}
+! Opt
+
+* xyz {{ molecule.charge }} {{ molecule.mult }}
+{{ molecule.to_string("xyz") }}
+*
+

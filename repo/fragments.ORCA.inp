@@ -1,0 +1,9 @@
+{% set frags = molecule.split() %}
+# {{ molecule.name }}
+! Opt
+
+* xyz {{ molecule.charge }} {{ molecule.mult }}
+{% for frag in frags %}
+{{ frag.to_string("xyz", dialect="orca", fragment_id=loop.index) }}
+{% endfor %}
+*
