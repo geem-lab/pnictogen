@@ -1,64 +1,58 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Setup script for pnictogen."""
+"""Package setup script for pnictogen."""
 
-import os
+import os.path
 import setuptools
+from distutils.core import setup
 
-version_file = open(os.path.join(".", "VERSION"))
+name = 'pnictogen'
+this_directory = os.path.abspath(os.path.dirname(__file__))
+
+version_file = open(os.path.join(this_directory, "VERSION"))
 version = version_file.read().strip()
+
+url = 'https://github.com/dudektria/pnictogen'
 download_url = \
-   'https://github.com/dudektria/pnictogen/archive/{:s}.tar.gz'.format(version)
+   '{:s}/archive/{:s}.tar.gz'.format(url, version)
 
-doclines = """pnictogen: input generation for computational chemistry packages
+with open(os.path.join(this_directory, 'README.rst')) as f:
+    long_description = f.read()
 
-pnictogen is a Python library that generates input files for computational
-chemistry packages.
-""".split("\n")
-
-# Chosen from http://www.python.org/pypi?:action=list_classifiers
-classifiers = """Development Status :: 3 - Alpha
-Environment :: Console
-Intended Audience :: Science/Research
-Intended Audience :: Education
-Intended Audience :: Developers
-License :: OSI Approved :: MIT License
-Natural Language :: English
-Operating System :: OS Independent
-Programming Language :: Python
-Programming Language :: Python :: 3
-Topic :: Scientific/Engineering :: Chemistry
-Topic :: Education
-Topic :: Software Development :: Libraries :: Python Modules"""
-
-keywords = [
-    'science',
-    'research',
-    'chemistry',
-]
-
-install_requires = [
-    'Jinja2>=2.10',
-    'pyrrole',
-]
-
-setuptools.setup(
-    name='pnictogen',
+setup(
+    name=name,
     version=version,
-    url='https://github.com/dudektria/pnictogen',
+    url=url,
     download_url=download_url,
-    author='Felipe Silveira de Souza Schneider',
+    author='Felipe S. S. Schneider',
     author_email='schneider.felipe@posgrad.ufsc.br',
     license='MIT',
-    description=doclines[0],
-    long_description="\n".join(doclines[2:]),
-    classifiers=classifiers.split("\n"),
+    description=('A Python library and a command-line tool that creates input '
+                 'files for computational chemistry packages.'),
+    long_description=long_description,
+    classifiers=["Programming Language :: Python :: 3",
+                 "Programming Language :: Python :: 2",
+                 "Programming Language :: Python",
+                 "License :: OSI Approved :: MIT License",
+                 "Operating System :: OS Independent",
+                 "Development Status :: 3 - Alpha",
+                 "Environment :: Console",
+                 "Intended Audience :: Science/Research",
+                 "Intended Audience :: Education",
+                 "Intended Audience :: Developers",
+                 "Topic :: Scientific/Engineering :: Chemistry",
+                 "Topic :: Education",
+                 "Topic :: Software Development :: Libraries :: Python Modules"],  # noqa
+    keywords=['science',
+              'research',
+              'chemistry'],
     packages=setuptools.find_packages(exclude=['*test*']),
-    keywords=keywords,
-    install_requires=install_requires,
-    include_package_data=True,
+    install_requires=['Jinja2>=2.10',
+                      'pyrrole'],
+    setup_requires=['nose>=1.0'],
     test_suite='nose.collector',
+    include_package_data=True,
     entry_points={
         'console_scripts': [
             'pnictogen = pnictogen:main',
