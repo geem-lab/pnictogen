@@ -114,10 +114,14 @@ def main(argv=sys.argv[1:]):
         for descriptor in args.descriptors:
             input_prefix, _ = os.path.splitext(descriptor)
 
-            # TODO: try cclib before Open Babel
-            molecule = atoms.read_pybel(descriptor)
-            written_files = pnictogen(molecule, input_prefix, args.template,
-                                      extension)
+            try:
+                molecule = atoms.read_cclib(descriptor)
+                written_files = pnictogen(molecule, input_prefix,
+                                          args.template, extension)
+            except KeyError:
+                molecule = atoms.read_pybel(descriptor)
+                written_files = pnictogen(molecule, input_prefix,
+                                          args.template, extension)
 
             for written_file in written_files:
                 print("{:s} written".format(written_file))

@@ -310,3 +310,28 @@ O(2)       0.31020        0.07569       -2.07524
 H(2)      -0.26065        0.64232       -2.62218
 H(2)       0.64083       -0.57862       -2.71449
 *""")
+
+
+def test_read_with_cclib():
+    """Test if we can correctly read with cclib through pyrrole."""
+    main(["repo/Gaussian.gjf", "data/benzene.out"])
+    assert_equals(open("data/benzene.gjf").read(),
+                  """#Put Keywords Here, check Charge and Multiplicity.
+
+ data/benzene.out
+
+0  1
+C          1.74589        1.79575       -1.05975
+C          0.94841        2.86897       -1.43112
+C          1.44805        1.07435        0.08765
+C         -0.14707        3.22061       -0.65525
+C          0.35257        1.42599        0.86352
+C         -0.44491        2.49921        0.49216
+H          2.59974        1.52031       -1.66517
+H          1.18103        3.43114       -2.32624
+H          2.07000        0.23754        0.37812
+H         -0.76902        4.05742       -0.94571
+H          0.11995        0.86382        1.75864
+H         -1.29876        2.77465        1.09757
+
+""")
