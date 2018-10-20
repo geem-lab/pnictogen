@@ -1,26 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Core functionality."""
+
 import os
 import sys
-import yaml
-import parse
+import numpy as np
 import argparse
 import pkg_resources
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
-import pybel
-
-from pnictogen.helpers import available_helpers
+from pyrrole import atoms
 
 __version__ = pkg_resources.require(__name__)[0].version
 
-with open(os.path.join(os.path.dirname(__file__), "../config.yml")) as stream:
-    config = yaml.load(stream)
+# This dict is set to globals prior to template renderization
+AVAILABLE_HELPERS = {
+    "np": np,
+}
+
+REPOSITORY_PATH = os.path.join(os.path.dirname(__file__), "../repo")
+REPOSITORY = \
+    {os.path.splitext(filename)[0]: os.path.join(REPOSITORY_PATH, filename)
+     for filename in os.listdir(REPOSITORY_PATH)}
 
 
 def argparser():
     """
-    Return a parser for the command-line interface (pnictogen.main)
+    Return a parser for the command-line interface (pnictogen.main).
 
     Returns
     -------
@@ -39,8 +45,8 @@ def argparser():
 
     parser is then an argparse.ArgumentParser object and args an object
     representing parsed arguments.
-    """
 
+    """
     parser = argparse.ArgumentParser(
         description="input generation for computational chemistry packages",
         epilog="""%(prog)s is licensed under the MIT License
@@ -59,7 +65,7 @@ def argparser():
         help="""template file.
         "ext" can be anything.
         "package" might be one of the following:
-        {}.""".format(", ".join(config["packages"].keys())))
+        {}.""".format(", ".join(REPOSITORY.keys())))
     parser.add_argument(
         "descriptors", metavar="descriptor.ext", nargs="*",
         help="""files describing molecules, which are read using Open Babel
@@ -84,53 +90,52 @@ def main(argv=sys.argv[1:]):
     the pnictogen function below for one that is), the following should work:
 
     >>> import pnictogen
-    >>> pnictogen.main(["-g", "examples/templates/ORCA.inp"])
-    examples/templates/ORCA.inp written
-    >>> pnictogen.main(["examples/templates/ORCA.inp", "examples/co.xyz",
-    ...                 "examples/water.xyz"])
-    examples/co.inp written
-    examples/water.inp written
+    >>> pnictogen.main(["-g", "repo/ORCA.inp"])
+    repo/ORCA.inp written
+    >>> pnictogen.main(["repo/ORCA.inp", "data/co.xyz",
+    ...                 "data/water.xyz"])
+    data/co.inp written
+    data/water.inp written
 
     This is exactly as if pnictogen were called from the command-line.
-    """
 
+    """
     parser = argparser()
     args = parser.parse_args(argv)
     package, extension = os.path.basename(args.template).split(".")[-2:]
 
     if args.generate:
+        with open(REPOSITORY[package], "r") as stream:
+            content = stream.read()
         with open(args.template, "w") as stream:
-            if package in config["packages"]:
-                stream.write(config["packages"][package]["boilerplate"])
+            stream.write(content)
         print("{:s} written".format(args.template))
     else:
         for descriptor in args.descriptors:
-            input_prefix, descriptor_extension = os.path.splitext(descriptor)
+            input_prefix, _ = os.path.splitext(descriptor)
 
-            # TODO: try cclib before Open Babel
-            molecules = list(pybel.readfile(descriptor_extension[1:],
-                                            descriptor))
-
-            for molecule in molecules:
-                update_data(molecule, molecule.title)
-
-            written_files = pnictogen(molecules, input_prefix, args.template,
-                                      extension)
+            try:
+                molecule = atoms.read_cclib(descriptor)
+                written_files = pnictogen(molecule, input_prefix,
+                                          args.template, extension)
+            except KeyError:
+                molecule = atoms.read_pybel(descriptor)
+                written_files = pnictogen(molecule, input_prefix,
+                                          args.template, extension)
 
             for written_file in written_files:
                 print("{:s} written".format(written_file))
 
 
-def pnictogen(molecules, input_prefix, template, extension=None,
-              globals=available_helpers, **kwargs):
+def pnictogen(molecule, input_prefix, template, extension=None,
+              globals=AVAILABLE_HELPERS, **kwargs):
     """
-    Generate inputs based on a template and a set of molecules
+    Generate inputs based on a template and a collection of atoms.
 
     Parameters
     ----------
-    molecules : iterable object of pybel.Molecule
-        A set of molecules. This will be converted to list before being passed
-        to template.
+    molecule : `pyrrole.Atoms`
+        An object with molecular properties.
     input_prefix : str
         Base path (without extension or dot at the end) for the input to be
         generated. All written files will share this common prefix.
@@ -157,32 +162,32 @@ def pnictogen(molecules, input_prefix, template, extension=None,
     This is the function you would call from within Python code. A simple
     example of use would be:
 
-    >>> mol = pybel.readfile("xyz", "examples/co.xyz")
-    >>> pnictogen(mol, "examples/co", "examples/templates/ORCA.inp")
-    ['examples/co.inp']
+    >>> mol = atoms.read_pybel("data/co.xyz")
+    >>> pnictogen(mol, "data/co", "repo/ORCA.inp")
+    ['data/co.inp']
+
     """
     if extension is None:
         package, extension = os.path.basename(template).split(".")[-2:]
 
     written_files = []
 
-    # TODO: add some keywords from command-line to context (like
-    # "-k charge=-1" or from a yaml file)
+    # TODO: add some keywords from command-line to context.
     raw_rendered = render_template(template, input_prefix=input_prefix,
-                                   molecules=list(molecules),
-                                   globals=globals, **kwargs)
+                                   molecule=molecule, globals=globals,
+                                   **kwargs)
 
-    flag = None
+    at_id = None
     raw_rendered = raw_rendered.split('--@')
     for rendered in raw_rendered:
-        if flag is None:
-            flag = ""
+        if at_id is None:
+            at_id = ""
         else:
-            flag, rendered = rendered.split("\n", 1)
-            flag = "_{:s}".format(flag)
+            at_id, rendered = rendered.split("\n", 1)
+            at_id = "_{:s}".format(at_id)
 
         if rendered.strip():
-            path = "{:s}{:s}.{:s}".format(input_prefix, flag, extension)
+            path = "{:s}{:s}.{:s}".format(input_prefix, at_id, extension)
             with open(path, "w") as stream:
                 stream.write(rendered)
 
@@ -192,7 +197,7 @@ def pnictogen(molecules, input_prefix, template, extension=None,
 
 def render_template(template, **kwargs):
     """
-    Define template rendering with Jinja2
+    Define template rendering with Jinja2.
 
     Parameters
     ----------
@@ -212,14 +217,14 @@ def render_template(template, **kwargs):
 
     Examples
     --------
-    >>> main(["-g", "examples/templates/QChem.in"])
-    examples/templates/QChem.in written
+    >>> main(["-g", "repo/QChem.in"])
+    repo/QChem.in written
     >>> context = {
-    ...     "molecules": list(pybel.readfile("xyz", "examples/water.xyz"))
+    ...     "molecule": atoms.read_pybel("data/water.xyz")
     ... }
-    >>> print(render_template("examples/templates/QChem.in", **context))
+    >>> print(render_template("repo/QChem.in", **context))
     $comment
-    PBE0-D3(BJ)/def2-TZVP @ ORCA 4.0.1.2
+    data/water.xyz
     $end
     <BLANKLINE>
     $molecule
@@ -232,7 +237,7 @@ def render_template(template, **kwargs):
     $rem
     <BLANKLINE>
     $end
-    <BLANKLINE>
+
     """
     extensions = kwargs.pop('extensions', [])
     globals = kwargs.pop('globals', {})
@@ -252,38 +257,6 @@ def render_template(template, **kwargs):
         template_jinja = jinja_env.from_string(open(template).read())
 
     return template_jinja.render(kwargs)
-
-
-def update_data(molecule, line,
-                pattern=parse.compile("{key:S}={value:S}")):
-    """
-    Update the data stored in molecule with what can be parsed from a string
-
-    Parameters
-    ----------
-    molecule : pybel.Molecule
-        The molecule to be updated
-    line : str
-        The string to be parsed
-    pattern : parse.Parser, optional
-        A parse.Parser instance to parse line
-
-    Examples
-    --------
-    Currently only charge and spin are parsed:
-
-    >>> mol = pybel.readstring("smi", "[Cu]")
-    >>> mol.charge, mol.spin
-    (0, 1)
-    >>> update_data(mol, "charge=+1 spin=3")
-    >>> mol.charge, mol.spin
-    (1, 3)
-    """
-    for result in pattern.findall(line):
-        if result["key"] == "charge":
-            molecule.OBMol.SetTotalCharge(int(result["value"]))
-        elif result["key"] == "spin":
-            molecule.OBMol.SetTotalSpinMultiplicity(int(result["value"]))
 
 
 if __name__ == "__main__":

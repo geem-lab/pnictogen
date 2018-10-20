@@ -1,0 +1,8 @@
+#Put Keywords Here, check Charge and Multiplicity.
+
+ {{ molecule.name }}
+
+{{ molecule.charge }}  {{ molecule.mult }}
+{{ molecule.to_string("xyz") }}
+
+

@@ -1,0 +1,1 @@
+{{ molecule.to_string('zin') }}

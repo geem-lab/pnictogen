@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""Setup script for pnictogen."""
+
 import os
 import setuptools
 
@@ -39,7 +41,6 @@ keywords = [
 install_requires = [
     'nose',
     'parse',
-    'pyyaml',
     'jinja2',
     'openbabel',
 ]

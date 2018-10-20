@@ -1,0 +1,47 @@
+{% set frags = molecule.split() %}
+--@eda
+TITLE {{ molecule.name }} eda
+
+CHARGE {{ molecule.charge }}  {{ molecule.mult - 1 }}
+
+Number of atoms
+ {{ molecule.natom }}
+
+ATOMS Cartesian
+{% for frag in frags %}
+{{ frag.to_string("xyz", dialect="adf", fragment_id="f{}".format(loop.index)) }}
+{% endfor %}
+End
+
+Fragments
+{% for frag in frags %}
+ f{{ loop.index }} {{ input_prefix }}_f{{ loop.index }}.t21
+{% endfor %}
+End
+
+Basis
+End
+
+Geometry
+End
+
+{% for frag in frags %}
+--@f{{ loop.index }}
+TITLE {{ molecule.name }} f{{ loop.index }}
+
+CHARGE {{ frag.charge }}  {{ frag.mult - 1 }}
+
+Number of atoms
+ {{ frag.natom }}
+
+ATOMS Cartesian
+{{ frag.to_string("xyz") }}
+End
+
+Basis
+End
+
+Geometry
+End
+
+{% endfor %}

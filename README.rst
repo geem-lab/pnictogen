@@ -11,15 +11,15 @@ It is based on Jinja2_, a modern and friendly templating language for Python:
 .. code:: bash
 
     $ cat new_template.ORCA.inp
-    # {{ molecules[0].title }}
+    # {{ molecule.name }}
     ! Opt
 
-    * xyz {{ molecules[0].charge }} {{ molecules[0].spin }}
-    {{ xyz(molecules[0]) }}
+    * xyz {{ molecule.charge }} {{ molecule.mult }}
+    {{ molecule.to_string("xyz") }}
     *
-    $ pnictogen new_template.ORCA.inp examples/water.xyz
-    examples/water.inp written
-    $ cat examples/water.inp
+    $ pnictogen new_template.ORCA.inp data/water.xyz
+    data/water.inp written
+    $ cat data/water.inp
     # A water molecule
     ! Opt
 
@@ -35,6 +35,23 @@ pnictogen is the big brother of nitrogen_, hence the
 .. _pnictogen: https://github.com/dudektria/pnictogen
 .. _nitrogen: https://github.com/chemical-scripts/nitrogen
 .. _Jinja2: http://jinja.pocoo.org/docs/latest/
+
+Installation
+------------
+
+You can get pnictogen directly from PyPI:
+
+.. code:: bash
+
+    $ pip install -U pnictogen
+
+The above will install the the version from PyPI, which is recommended.
+
+For the development version, clone this repository and run:
+
+.. code:: bash
+
+    $ pip install -U -e .
 
 Tutorial
 --------
@@ -61,10 +78,10 @@ and
     $ pnictogen -g new_template.MOPAC.mop
     new_template.MOPAC.mop written
     $ cat new_template.MOPAC.mop
-    CHARGE={{ molecules[0].charge }} MS={{ (molecules[0].spin - 1)/2 }}
-    {{ molecules[0].title }}
+    CHARGE={{ molecule.charge }} MS={{ (molecule.mult - 1)/2 }}
+    {{ molecule.name }}
 
-    {{ xyz(molecules[0], style="MOPAC") }}
+    {{ molecule.to_string("mop") }}
 
 (``pnictogen -g new_template.inp`` creates a blank file.)
 
@@ -73,9 +90,9 @@ Once you have a template, generating inputs is easy:
 
 .. code:: bash
 
-    $ pnictogen new_template.ORCA.inp examples/co.xyz examples/water.xyz
-    examples/co.inp written
-    examples/water.inp written
+    $ pnictogen new_template.ORCA.inp data/co.xyz data/water.xyz
+    data/co.inp written
+    data/water.inp written
 
 (Wildcards are allowed, e.g., ``pnictogen new_template.ORCA.inp *.xyz`` works.)
 
@@ -92,31 +109,31 @@ Besides this, pnictogen also understands a special delimiter (``--@``) that allo
 
 .. code:: bash
 
-    $ cat examples/templates/opt.MOPAC.mop
-    {% for molecule in molecules %}
+    $ cat repo/MOPAC.mop
+    {% for molecule in molecule %}
     --@{{ loop.index }}
-    CHARGE={{ molecule.charge }} MS={{ (molecule.spin - 1)/2 }}
-    {{ molecule.title }}
+    CHARGE={{ molecule.charge }} MS={{ (molecule.mult - 1)/2 }}
+    {{ molecule.name }}
 
-    {{ xyz(molecule, style="MOPAC") }}
+    {{ molecule.to_string("mop") }}
 
     {% endfor %}
-    $ pnictogen examples/templates/opt.MOPAC.mop examples/pentane_conformers.xyz
-    examples/pentane_conformers_1.mop written
-    examples/pentane_conformers_2.mop written
-    examples/pentane_conformers_3.mop written
-    examples/pentane_conformers_4.mop written
-    examples/pentane_conformers_5.mop written
-    examples/pentane_conformers_6.mop written
-    examples/pentane_conformers_7.mop written
+    $ pnictogen repo/MOPAC.mop data/pentane_conformers.xyz
+    data/pentane_conformers_1.mop written
+    data/pentane_conformers_2.mop written
+    data/pentane_conformers_3.mop written
+    data/pentane_conformers_4.mop written
+    data/pentane_conformers_5.mop written
+    data/pentane_conformers_6.mop written
+    data/pentane_conformers_7.mop written
 
 The rest of the line after ``--@`` is aways added to the name of the inputs after an underscore (``_``).
 
-In the example above, ``examples/pentane_conformers.xyz`` contains seven conformers of pentane, so seven inputs were generated (the counting is provided by ``loop.index``):
+In the example above, ``data/pentane_conformers.xyz`` contains seven conformers of pentane, so seven inputs were generated (the counting is provided by ``loop.index``):
 
 .. code:: bash
 
-    $ cat examples/pentane_conformers_5.mop
+    $ cat data/pentane_conformers_5.mop
     CHARGE=0 MS=0.0
     C5H12
 
@@ -138,8 +155,6 @@ In the example above, ``examples/pentane_conformers.xyz`` contains seven conform
     H  -2.49134 1 -0.93096 1  0.91678 1
     H  -3.38842 1  0.31762 1  0.01981 1
 
-pnictogen also has a helper ``conformers()``, which makes it even easier to do the above.
-
 Example: energy decomposition analysis (EDA) with ADF
 --------------------------------------------------------------
 
@@ -147,7 +162,7 @@ Imagine we want to do `energy decomposition analysis <https://doi.org/10.1002/wc
 
 .. code:: bash
 
-        $ cat water_dimer.xyz
+        $ cat water-dimer.xyz
         6
 
         O          0.12908       -0.26336        0.64798
@@ -157,57 +172,57 @@ Imagine we want to do `energy decomposition analysis <https://doi.org/10.1002/wc
         H          0.64083       -0.57862       -2.71449
         H         -0.26065        0.64232       -2.62218
 
-The following template uses both ``fragment()`` and ``xyz()`` functions to generate ADF inputs in bulk:
+The following template uses both ``Atoms.split()`` and ``Atoms.to_string("xyz")`` functions to generate ADF inputs in bulk:
 
 .. code:: bash
 
     $ cat EDA.ADF.in
-    {% set frags = fragment(molecules[0], [range(3), range(3, 6)]) %}
+    {% set frags = molecule.split([range(3), range(3, 6)]) %}
     --@eda
     ATOMS Cartesian
     {% for frag in frags %}
-    {{ xyz(frag, "ADF", "frag{}".format(loop.index)) }}
+    {{ frag.to_string("xyz", dialect="adf", fragment_id="f{}".format(loop.index)) }}
     {% endfor %}
     End
 
     Fragments
     {% for frag in frags %}
-     frag{{ loop.index }} {{ input_prefix }}_frag{{ loop.index }}.t21
+     f{{ loop.index }} {{ input_prefix }}_f{{ loop.index }}.t21
     {% endfor %}
     End
 
     {% for frag in frags %}
-    --@frag{{ loop.index }}
+    --@f{{ loop.index }}
     ATOMS Cartesian
-    {{ xyz(frag) }}
+    {{ frag.to_string("xyz") }}
     End
 
     {% endfor %}
-    $ pnictogen EDA.ADF.in examples/water_dimer.xyz
-    examples/water_dimer_eda.in written
-    examples/water_dimer_frag1.in written
-    examples/water_dimer_frag2.in written
+    $ pnictogen EDA.ADF.in data/water-dimer.xyz
+    data/water-dimer_eda.in written
+    data/water-dimer_f1.in written
+    data/water-dimer_f2.in written
 
 The above creates inputs like the following:
 
 .. code:: bash
 
-    $ cat water_dimer_eda.in
+    $ cat water-dimer_eda.in
     ATOMS Cartesian
-    O          0.12908       -0.26336        0.64798       f=frag1
-    H          0.89795        0.28805        0.85518       f=frag1
-    H          0.10833       -0.20468       -0.33302       f=frag1
-    O          0.31020        0.07569       -2.07524       f=frag2
-    H          0.64083       -0.57862       -2.71449       f=frag2
-    H         -0.26065        0.64232       -2.62218       f=frag2
+    O          0.12908       -0.26336        0.64798       f=f1
+    H          0.89795        0.28805        0.85518       f=f1
+    H          0.10833       -0.20468       -0.33302       f=f1
+    O          0.31020        0.07569       -2.07524       f=f2
+    H          0.64083       -0.57862       -2.71449       f=f2
+    H         -0.26065        0.64232       -2.62218       f=f2
     End
 
     Fragments
-    frag1 examples/water_dimer_frag1.t21
-    frag2 examples/water_dimer_frag2.t21
+    f1 data/water-dimer_f1.t21
+    f2 data/water-dimer_f2.t21
     End
 
-    $ cat water_dimer_frag1.in
+    $ cat water-dimer_f1.in
     ATOMS Cartesian
     O          0.12908       -0.26336        0.64798
     H          0.89795        0.28805        0.85518

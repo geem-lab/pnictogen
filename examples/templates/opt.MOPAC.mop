@@ -1,8 +1,0 @@
-{% for molecule in molecules %}
---@{{ loop.index }}
-CHARGE={{ molecule.charge }} MS={{ (molecule.spin - 1)/2 }}
-{{ molecule.title }}
-
-{{ xyz(molecule, style="MOPAC") }}
-
-{% endfor %}
