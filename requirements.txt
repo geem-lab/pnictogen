@@ -1,5 +1,2 @@
-nose
-parse
-PyYAML
-Jinja2
-openbabel
+Jinja2>=2.10
+pyrrole

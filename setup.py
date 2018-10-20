@@ -39,10 +39,8 @@ keywords = [
 ]
 
 install_requires = [
-    'nose',
-    'parse',
-    'jinja2',
-    'openbabel',
+    'Jinja2>=2.10',
+    'pyrrole',
 ]
 
 setuptools.setup(
