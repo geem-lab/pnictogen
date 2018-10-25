@@ -7,21 +7,20 @@ import os
 import sys
 import numpy as np
 import argparse
-import pkg_resources
+from pkg_resources import require, resource_filename, resource_listdir
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from pyrrole import atoms
 
-__version__ = pkg_resources.require(__name__)[0].version
+__version__ = require(__name__)[0].version
 
 # This dict is set to globals prior to template renderization
 AVAILABLE_HELPERS = {
     "np": np,
 }
 
-REPOSITORY_PATH = os.path.join(os.path.dirname(__file__), "../repo")
 REPOSITORY = \
-    {os.path.splitext(filename)[0]: os.path.join(REPOSITORY_PATH, filename)
-     for filename in os.listdir(REPOSITORY_PATH)}
+    {os.path.splitext(name)[0]: resource_filename(__name__, "repo/" + name)
+     for name in resource_listdir(__name__, "repo")}
 
 
 def argparser():
@@ -59,7 +58,6 @@ def argparser():
         "-v", "--version",
         action="version", version="%(prog)s {:s}".format(__version__))
 
-    # TODO: manpage
     parser.add_argument(
         "template", metavar="template.package.ext | template.ext",
         help="""template file.
@@ -90,9 +88,9 @@ def main(argv=sys.argv[1:]):
     the pnictogen function below for one that is), the following should work:
 
     >>> import pnictogen
-    >>> pnictogen.main(["-g", "repo/ORCA.inp"])
-    repo/ORCA.inp written
-    >>> pnictogen.main(["repo/ORCA.inp", "data/co.xyz",
+    >>> pnictogen.main(["-g", "/tmp/opt.ORCA.inp"])
+    /tmp/opt.ORCA.inp written
+    >>> pnictogen.main(["/tmp/opt.ORCA.inp", "data/co.xyz",
     ...                 "data/water.xyz"])
     data/co.inp written
     data/water.inp written
@@ -163,7 +161,7 @@ def pnictogen(molecule, input_prefix, template, extension=None,
     example of use would be:
 
     >>> mol = atoms.read_pybel("data/co.xyz")
-    >>> pnictogen(mol, "data/co", "repo/ORCA.inp")
+    >>> pnictogen(mol, "data/co", "pnictogen/repo/ORCA.inp")
     ['data/co.inp']
 
     """
@@ -172,7 +170,6 @@ def pnictogen(molecule, input_prefix, template, extension=None,
 
     written_files = []
 
-    # TODO: add some keywords from command-line to context.
     raw_rendered = render_template(template, input_prefix=input_prefix,
                                    molecule=molecule, globals=globals,
                                    **kwargs)
@@ -217,12 +214,12 @@ def render_template(template, **kwargs):
 
     Examples
     --------
-    >>> main(["-g", "repo/QChem.in"])
-    repo/QChem.in written
+    >>> main(["-g", "/tmp/freq.QChem.in"])
+    /tmp/freq.QChem.in written
     >>> context = {
     ...     "molecule": atoms.read_pybel("data/water.xyz")
     ... }
-    >>> print(render_template("repo/QChem.in", **context))
+    >>> print(render_template("/tmp/freq.QChem.in", **context))
     $comment
     data/water.xyz
     $end
@@ -242,8 +239,6 @@ def render_template(template, **kwargs):
     extensions = kwargs.pop('extensions', [])
     globals = kwargs.pop('globals', {})
 
-    # TODO: allow and test for templates inheritance (maybe adding something
-    # like "~/.pnictogen/" to searchpath as well)
     jinja_env = Environment(
         loader=FileSystemLoader("./"),
         extensions=extensions,

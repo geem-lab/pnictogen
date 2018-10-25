@@ -4,8 +4,7 @@
 """Package setup script for pnictogen."""
 
 import os.path
-import setuptools
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 name = 'pnictogen'
 this_directory = os.path.abspath(os.path.dirname(__file__))
@@ -47,7 +46,7 @@ setup(
     keywords=['science',
               'research',
               'chemistry'],
-    packages=setuptools.find_packages(exclude=['*test*']),
+    packages=find_packages(exclude=['*test*']),
     install_requires=['Jinja2>=2.10',
                       'pyrrole'],
     setup_requires=['nose>=1.0'],

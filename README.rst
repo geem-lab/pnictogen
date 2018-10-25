@@ -103,7 +103,7 @@ Check the list of all available file formats `here <https://open-babel.readthedo
 Templates
 ---------
 
-You can use the full Jinja2 syntax within templates (check `here <http://jinja.pocoo.org/docs/2.10/templates/>`_ its documentation for details).
+You can use the full Jinja2 syntax within templates (`check here <http://jinja.pocoo.org/docs/2.10/templates/>`_ its documentation for details).
 
 Besides this, pnictogen also understands a special delimiter (``--@``) that allows one to generate many inputs from a single file:
 
@@ -176,7 +176,7 @@ The following template uses both ``Atoms.split()`` and ``Atoms.to_string("xyz")`
 
 .. code:: bash
 
-    $ cat EDA.ADF.in
+    $ cat split.ADF.in
     {% set frags = molecule.split([range(3), range(3, 6)]) %}
     --@eda
     ATOMS Cartesian
@@ -198,7 +198,7 @@ The following template uses both ``Atoms.split()`` and ``Atoms.to_string("xyz")`
     End
 
     {% endfor %}
-    $ pnictogen EDA.ADF.in data/water-dimer.xyz
+    $ pnictogen split.ADF.in data/water-dimer.xyz
     data/water-dimer_eda.in written
     data/water-dimer_f1.in written
     data/water-dimer_f2.in written
