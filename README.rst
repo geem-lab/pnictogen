@@ -1,5 +1,12 @@
-.. image:: https://travis-ci.org/dudektria/pnictogen.svg?branch=master
-    :target: https://travis-ci.org/dudektria/pnictogen
+.. |build-badge| image:: https://travis-ci.org/dudektria/pnictogen.svg?branch=master
+   :target: https://travis-ci.org/dudektria/pnictogen
+   :alt: Travis CI Status
+
+.. |pypi-badge| image:: https://badge.fury.io/py/pnictogen.svg
+   :target: https://badge.fury.io/py/pnictogen
+   :alt: PyPI Version
+
+|build-badge| |pypi-badge|
 
 Welcome to pnictogen
 ====================
