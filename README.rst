@@ -103,7 +103,7 @@ Check the list of all available file formats `here <https://open-babel.readthedo
 Templates
 ---------
 
-You can use the full Jinja2 syntax within templates (check `here <http://jinja.pocoo.org/docs/2.10/templates/>`_ its documentation for details).
+You can use the full Jinja2 syntax within templates (`check here <http://jinja.pocoo.org/docs/2.10/templates/>`_ its documentation for details).
 
 Besides this, pnictogen also understands a special delimiter (``--@``) that allows one to generate many inputs from a single file:
 
