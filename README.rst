@@ -176,7 +176,7 @@ The following template uses both ``Atoms.split()`` and ``Atoms.to_string("xyz")`
 
 .. code:: bash
 
-    $ cat EDA.ADF.in
+    $ cat split.ADF.in
     {% set frags = molecule.split([range(3), range(3, 6)]) %}
     --@eda
     ATOMS Cartesian
@@ -198,7 +198,7 @@ The following template uses both ``Atoms.split()`` and ``Atoms.to_string("xyz")`
     End
 
     {% endfor %}
-    $ pnictogen EDA.ADF.in data/water-dimer.xyz
+    $ pnictogen split.ADF.in data/water-dimer.xyz
     data/water-dimer_eda.in written
     data/water-dimer_f1.in written
     data/water-dimer_f2.in written

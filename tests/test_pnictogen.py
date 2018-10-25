@@ -15,7 +15,7 @@ from pnictogen import argparser, main, pnictogen
 # Only testing xyz files because I trust Open Babel to handle other file types
 example_xyz_files = iglob("data/*.xyz")
 
-templates = iglob("repo/*")
+templates = iglob("pnictogen/repo/*")
 
 
 @contextmanager
@@ -55,7 +55,7 @@ def test_main():
 
     # Allow use of template in the parent directory
     with cd("data"):
-        main(["../repo/EDA.ADF.in", "water-dimer.xyz"])
+        main(["../pnictogen/repo/split.ADF.in", "water-dimer.xyz"])
 
 
 def test_pnictogen():
@@ -77,18 +77,19 @@ def test_pnictogen():
             assert_equals(written_files, written_files2)
 
     # Allow use of template in the parent directory
-    with cd("repo"):
-        mol = atoms.read_pybel("../data/water-dimer.xyz")
-        written_files = pnictogen(mol, "../data/water-dimer",
-                                  "EDA.ADF.in", "in")
+    with cd("pnictogen/repo"):
+        mol = atoms.read_pybel("../../data/water-dimer.xyz")
+        written_files = pnictogen(mol, "../../data/water-dimer",
+                                  "split.ADF.in", "in")
 
-        assert_equals(written_files, ["../data/water-dimer_eda.in",
-                                      "../data/water-dimer_f1.in",
-                                      "../data/water-dimer_f2.in"])
+        assert_equals(written_files, ["../../data/water-dimer_eda.in",
+                                      "../../data/water-dimer_f1.in",
+                                      "../../data/water-dimer_f2.in"])
 
+    main(["-g", "/tmp/hello.world.ORCA.inp"])
     mol = atoms.read_pybel("data/co.xyz")
     written_files = pnictogen(mol, "data/co",
-                              "repo/ORCA.inp", foo="bar")
+                              "/tmp/hello.world.ORCA.inp", foo="bar")
 
     assert_equals(written_files, ["data/co.inp"])
 
@@ -103,13 +104,13 @@ def test_render_templates():
     """Test if templates are correctly rendered."""
     water_mol = atoms.read_pybel("data/water.xyz")
 
-    main(["-g", "repo/ADF.in"])
-    main(["repo/ADF.in", "data/water.xyz"])
+    main(["-g", "/tmp/foo.ADF.in"])
+    main(["/tmp/foo.ADF.in", "data/water.xyz"])
     assert_equals(open("data/water.in").read().strip(),
                   water_mol.to_string("adf"))
 
-    main(["-g", "repo/GAMESS.inp"])
-    main(["repo/GAMESS.inp", "data/water.xyz"])
+    main(["-g", "/tmp/test.GAMESS.inp"])
+    main(["/tmp/test.GAMESS.inp", "data/water.xyz"])
     assert_equals(open("data/water.inp").read(),
                   """ $CONTRL COORD=CART UNITS=ANGS $END
 
@@ -124,13 +125,13 @@ H      1.0     -0.0680162466    1.0096135407    0.0000000000
 
 """)
 
-    main(["-g", "repo/GAMESSUK.inp"])
-    main(["repo/GAMESSUK.inp", "data/water.xyz"])
+    main(["-g", "/tmp/hello.GAMESSUK.inp"])
+    main(["/tmp/hello.GAMESSUK.inp", "data/water.xyz"])
     assert_equals(open("data/water.inp").read(),
                   water_mol.to_string("gukin"))
 
-    main(["-g", "repo/Gaussian.gjf"])
-    main(["repo/Gaussian.gjf", "data/water.xyz"])
+    main(["-g", "/tmp/hello.world.Gaussian.gjf"])
+    main(["/tmp/hello.world.Gaussian.gjf", "data/water.xyz"])
     assert_equals(open("data/water.gjf").read(),
                   """#Put Keywords Here, check Charge and Multiplicity.
 
@@ -143,16 +144,16 @@ H         -0.06802        1.00961        0.00000
 
 """)
 
-    main(["-g", "repo/Jaguar.in"])
-    main(["repo/Jaguar.in", "data/water.xyz"])
+    main(["-g", "/tmp/bar.Jaguar.in"])
+    main(["/tmp/bar.Jaguar.in", "data/water.xyz"])
     assert_equals(open("data/water.in").read(), water_mol.to_string("jin"))
 
-    main(["-g", "repo/Molpro.inp"])
-    main(["repo/Molpro.inp", "data/water.xyz"])
+    main(["-g", "/tmp/foo.Molpro.inp"])
+    main(["/tmp/foo.Molpro.inp", "data/water.xyz"])
     assert_equals(open("data/water.inp").read(), water_mol.to_string("mp"))
 
-    main(["-g", "repo/MOPAC.mop"])
-    main(["repo/MOPAC.mop", "data/water.xyz"])
+    main(["-g", "/tmp/example.MOPAC.mop"])
+    main(["/tmp/example.MOPAC.mop", "data/water.xyz"])
     assert_equals(open("data/water.mop").read(),
                   """CHARGE=0 MS=0.0
 data/water.xyz
@@ -162,13 +163,13 @@ H   1.00961 1 -0.06802 1  0.00000 1
 H  -0.06802 1  1.00961 1  0.00000 1
 """)
 
-    main(["-g", "repo/MPQC.in"])
-    main(["repo/MPQC.in", "data/water.xyz"])
+    main(["-g", "/tmp/bar.MPQC.in"])
+    main(["/tmp/bar.MPQC.in", "data/water.xyz"])
     assert_equals(open("data/water.in").read(),
                   water_mol.to_string("mpqcin"))
 
-    main(["-g", "repo/NWChem.nw"])
-    main(["repo/NWChem.nw", "data/water.xyz"])
+    main(["-g", "/tmp/foo.NWChem.nw"])
+    main(["/tmp/foo.NWChem.nw", "data/water.xyz"])
     assert_equals(open("data/water.nw").read(), """start molecule
 
 title data/water.xyz
@@ -180,8 +181,8 @@ H         -0.06802        1.00961        0.00000
 end
 """)
 
-    main(["-g", "repo/ORCA.inp"])
-    main(["repo/ORCA.inp", "data/water.xyz"])
+    main(["-g", "/tmp/example.ORCA.inp"])
+    main(["/tmp/example.ORCA.inp", "data/water.xyz"])
     assert_equals(open("data/water.inp").read(),
                   """# data/water.xyz
 ! Opt
@@ -193,8 +194,8 @@ H         -0.06802        1.00961        0.00000
 *
 """)
 
-    main(["-g", "repo/Psi.dat"])
-    main(["repo/Psi.dat", "data/water.xyz"])
+    main(["-g", "/tmp/bar.Psi.dat"])
+    main(["/tmp/bar.Psi.dat", "data/water.xyz"])
     assert_equals(open("data/water.dat").read(),
                   """# data/water.xyz
 
@@ -208,20 +209,20 @@ units angstrom
 
 optimize('scf')""")
 
-    main(["-g", "repo/QChem.in"])
-    main(["repo/QChem.in", "data/water.xyz"])
+    main(["-g", "/tmp/example.QChem.in"])
+    main(["/tmp/example.QChem.in", "data/water.xyz"])
     assert_equals(open("data/water.in").read(),
                   water_mol.to_string("qcin"))
 
-    main(["-g", "repo/ZINDO.input"])
-    main(["repo/ZINDO.input", "data/water.xyz"])
+    main(["-g", "/tmp/foo.ZINDO.input"])
+    main(["/tmp/foo.ZINDO.input", "data/water.xyz"])
     assert_equals(open("data/water.input").read(),
                   water_mol.to_string("zin"))
 
 
 def test_example_eda_adf():
     """Test example for EDA in ADF."""
-    main(["repo/EDA.ADF.in", "data/water-dimer.xyz"])
+    main(["pnictogen/repo/split.ADF.in", "data/water-dimer.xyz"])
     assert_equals(open("data/water-dimer_eda.in").read(),
                   """TITLE data/water-dimer.xyz eda
 
@@ -297,7 +298,7 @@ End
 
 def test_example_fragments_orca():
     """Test if fragmentation works with ORCA inputs."""
-    main(["repo/fragments.ORCA.inp", "data/water-dimer.xyz"])
+    main(["pnictogen/repo/split.ORCA.inp", "data/water-dimer.xyz"])
     assert_equals(open("data/water-dimer.inp").read(),
                   """# data/water-dimer.xyz
 ! Opt
@@ -314,7 +315,8 @@ H(2)       0.64083       -0.57862       -2.71449
 
 def test_read_with_cclib():
     """Test if we can correctly read with cclib through pyrrole."""
-    main(["repo/Gaussian.gjf", "data/benzene.out"])
+    main(["-g", "/tmp/fnord.Gaussian.gjf"])
+    main(["/tmp/fnord.Gaussian.gjf", "data/benzene.out"])
     assert_equals(open("data/benzene.gjf").read(),
                   """#Put Keywords Here, check Charge and Multiplicity.
 
