@@ -29,9 +29,6 @@ def cd(newdir):
         os.chdir(prevdir)
 
 
-# TODO: make prettier error messages when runnig tests
-
-
 def test_argparser():
     """Test if argparser works."""
     for template in templates:
@@ -92,12 +89,6 @@ def test_pnictogen():
                               "/tmp/hello.world.ORCA.inp", foo="bar")
 
     assert_equals(written_files, ["data/co.inp"])
-
-
-# TODO: create hello world template in a temporary file to test
-# render_template() without any molecule.
-# def test_render_templates():
-#     pass
 
 
 def test_render_templates():

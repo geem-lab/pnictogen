@@ -58,7 +58,6 @@ def argparser():
         "-v", "--version",
         action="version", version="%(prog)s {:s}".format(__version__))
 
-    # TODO: manpage
     parser.add_argument(
         "template", metavar="template.package.ext | template.ext",
         help="""template file.
@@ -171,7 +170,6 @@ def pnictogen(molecule, input_prefix, template, extension=None,
 
     written_files = []
 
-    # TODO: add some keywords from command-line to context.
     raw_rendered = render_template(template, input_prefix=input_prefix,
                                    molecule=molecule, globals=globals,
                                    **kwargs)
@@ -241,8 +239,6 @@ def render_template(template, **kwargs):
     extensions = kwargs.pop('extensions', [])
     globals = kwargs.pop('globals', {})
 
-    # TODO: allow and test for templates inheritance (maybe adding something
-    # like "~/.pnictogen/" to searchpath as well)
     jinja_env = Environment(
         loader=FileSystemLoader("./"),
         extensions=extensions,
