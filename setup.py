@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """Package setup script for pnictogen."""
@@ -48,7 +48,7 @@ setup(
     ],  # noqa
     keywords=["science", "research", "chemistry"],
     packages=find_packages(exclude=["*test*"]),
-    install_requires=["Jinja2>=2.10", "pyrrole"],
+    install_requires=[line.strip() for line in open("requirements.txt").readlines()],
     setup_requires=["nose>=1.0"],
     test_suite="nose.collector",
     include_package_data=True,

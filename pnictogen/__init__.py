@@ -1,25 +1,102 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """Core functionality."""
 
 import os
 import sys
-import numpy as np
 import argparse
+import importlib
 from pkg_resources import require, resource_filename, resource_listdir
+
+import cclib
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
-from pyrrole import atoms
 
 __version__ = require(__name__)[0].version
 
-# This dict is set to globals prior to template renderization
-AVAILABLE_HELPERS = {"np": np}
+table = cclib.parser.utils.PeriodicTable()
 
 REPOSITORY = {
     os.path.splitext(name)[0]: resource_filename(__name__, "repo/" + name)
     for name in resource_listdir(__name__, "repo")
 }
+
+
+class Atoms:
+    """
+    This is a simple umbrella object for many sources of data so as to make
+    everything behave like ``cclib.parser.ccData``.
+
+    Parameters
+    ----------
+    data : ccData-like
+        Any object that behaves like ``cclib.parser.ccData``.
+
+    """
+
+    def __init__(self, data):
+        """See docstring for this class."""
+        self._data = data
+
+        if not hasattr(self._data, "name"):
+            self.name = ""
+
+        if self._data.atomcoords.ndim > 2:
+            self.atomcoords = self._data.atomcoords
+        else:
+            self.atomcoords = [self._data.atomcoords]
+
+        try:
+            self.charge = self._data.charge
+        except AttributeError:
+            self.charge = 0
+
+        try:
+            self.mult = self._data.mult
+        except AttributeError:
+            self.mult = 1
+
+        if not hasattr(self._data, "atomsymbols"):
+            self.atomsymbols = [table.element[atomno] for atomno in self.atomnos]
+
+    def __getattr__(self, value):
+        """Wrap `Atoms.value` into `Atoms._data.value`."""
+        return getattr(self._data, value)
+
+    def to_openbabel(self):
+        """Return a OBMol."""
+        obmol = cclib.bridge.makeopenbabel(
+            self.atomcoords, self.atomnos, self.charge, self.mult
+        )
+        obmol.SetTitle(self.name)
+        return obmol
+
+    def to_string(self, format="xyz", with_header=False, with_atomnos=False):
+        if format == "xyz":
+            if with_atomnos:
+                s = "\n".join(
+                    [
+                        f"{s:3s} {n:-6.1f} {c[0]:-19.10f} {c[1]:-19.10f} {c[2]:-19.10f}"
+                        for s, n, c in zip(
+                            self.atomsymbols, self.atomnos, self.atomcoords[-1]
+                        )
+                    ]
+                )
+            else:
+                s = "\n".join(
+                    [
+                        f"{s:3s} {c[0]:-19.10f} {c[1]:-19.10f} {c[2]:-19.10f}"
+                        for s, c in zip(self.atomsymbols, self.atomcoords[-1])
+                    ]
+                )
+
+            if with_header:
+                s = f"{len(self.atomnos)}\n{self.name}\n{s}"
+            return s
+        else:
+            obc = cclib.bridge.cclib2openbabel.ob.OBConversion()
+            if obc.SetOutFormat(format):
+                return obc.WriteString(self.to_openbabel()).strip()
 
 
 def argparser():
@@ -120,37 +197,33 @@ def main(argv=sys.argv[1:]):
         print("{:s} written".format(args.template))
     else:
         for descriptor in args.descriptors:
-            input_prefix, _ = os.path.splitext(descriptor)
+            input_prefix, description_extension = os.path.splitext(descriptor)
 
             try:
-                molecule = atoms.read_cclib(descriptor)
-                written_files = pnictogen(
-                    molecule, input_prefix, args.template, extension
-                )
+                molecule = Atoms(cclib.ccopen(descriptor).parse())
             except KeyError:
-                molecule = atoms.read_pybel(descriptor)
-                written_files = pnictogen(
-                    molecule, input_prefix, args.template, extension
+                molecule = Atoms(
+                    cclib.bridge.cclib2openbabel.readfile(
+                        descriptor, description_extension[1:]
+                    )
                 )
+
+            if not molecule.name:
+                molecule.name = descriptor
+
+            written_files = pnictogen(molecule, input_prefix, args.template, extension)
 
             for written_file in written_files:
                 print("{:s} written".format(written_file))
 
 
-def pnictogen(
-    molecule,
-    input_prefix,
-    template,
-    extension=None,
-    globals=AVAILABLE_HELPERS,
-    **kwargs
-):
+def pnictogen(molecule, input_prefix, template, extension=None, **kwargs):
     """
-    Generate inputs based on a template and a collection of atoms.
+    Generate inputs based on a template and a collection of molecules.
 
     Parameters
     ----------
-    molecule : `pyrrole.Atoms`
+    molecule : ccData-like
         An object with molecular properties.
     input_prefix : str
         Base path (without extension or dot at the end) for the input to be
@@ -162,9 +235,6 @@ def pnictogen(
         template path will be used to select one.
     extensions : list, optional
         A set of extensions that are directly passed to Jinja2
-    globals : dict of functions, optional
-        Jinja2 specification of functions available within the template (see
-        render_template).
 
     Extra named arguments are passed directly to the template
 
@@ -178,7 +248,7 @@ def pnictogen(
     This is the function you would call from within Python code. A simple
     example of use would be:
 
-    >>> mol = atoms.read_pybel("data/co.xyz")
+    >>> mol = Atoms(cclib.bridge.cclib2openbabel.readfile("data/co.xyz", "xyz"))
     >>> pnictogen(mol, "data/co", "pnictogen/repo/ORCA.inp")
     ['data/co.inp']
 
@@ -189,11 +259,7 @@ def pnictogen(
     written_files = []
 
     raw_rendered = render_template(
-        template,
-        input_prefix=input_prefix,
-        molecule=molecule,
-        globals=globals,
-        **kwargs
+        template, input_prefix=input_prefix, molecule=molecule, **kwargs
     )
 
     at_id = None
@@ -224,8 +290,6 @@ def render_template(template, **kwargs):
         Path to Jinja2 template file, relative to the local directory
     extensions : list, optional
         A set of extensions that are directly passed to Jinja2
-    globals : dict of functions, optional
-        Jinja2 specification of functions available within the template
 
     Extra named arguments are passed directly to the template
 
@@ -239,8 +303,9 @@ def render_template(template, **kwargs):
     >>> main(["-g", "/tmp/freq.QChem.in"])
     /tmp/freq.QChem.in written
     >>> context = {
-    ...     "molecule": atoms.read_pybel("data/water.xyz")
+    ...     "molecule": Atoms(cclib.bridge.cclib2openbabel.readfile("data/water.xyz", "xyz"))
     ... }
+    >>> context["molecule"].name = "data/water.xyz"
     >>> print(render_template("/tmp/freq.QChem.in", **context))
     $comment
     data/water.xyz
@@ -259,12 +324,11 @@ def render_template(template, **kwargs):
 
     """
     extensions = kwargs.pop("extensions", [])
-    globals = kwargs.pop("globals", {})
 
     jinja_env = Environment(
         loader=FileSystemLoader("./"), extensions=extensions, trim_blocks=True
     )
-    jinja_env.globals.update(globals)
+    jinja_env.globals.update({"import": importlib.import_module})
 
     try:
         template_jinja = jinja_env.get_template(template)

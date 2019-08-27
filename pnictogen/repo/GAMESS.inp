@@ -3,7 +3,7 @@
  $DATA
 {{ molecule.name }}
 C1
-{{ molecule.to_string("gamin") }}
+{{ molecule.to_string("xyz", with_atomnos=True) }}
  $END
 
 

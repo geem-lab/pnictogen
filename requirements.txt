@@ -1,2 +1,2 @@
+cclib
 Jinja2>=2.10
-pyrrole

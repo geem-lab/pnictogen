@@ -179,7 +179,7 @@ Imagine we want to do `energy decomposition analysis <https://doi.org/10.1002/wc
         H          0.64083       -0.57862       -2.71449
         H         -0.26065        0.64232       -2.62218
 
-The following template uses both ``Atoms.split()`` and ``Atoms.to_string("xyz")`` functions to generate ADF inputs in bulk:
+The following template uses both ``molecule.split()`` and ``molecule.to_string("xyz")`` functions to generate ADF inputs in bulk:
 
 .. code:: bash
 

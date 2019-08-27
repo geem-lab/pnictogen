@@ -1,16 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """Tests for pnictogen module."""
 
 import os
 from glob import iglob
-
-from pyrrole import atoms
-from nose.tools import assert_equals
 from contextlib import contextmanager
 
-from pnictogen import argparser, main, pnictogen
+import cclib
+from nose.tools import assert_equals
+from pnictogen import Atoms, argparser, main, pnictogen
 
 # Only testing xyz files because I trust Open Babel to handle other file types
 example_xyz_files = iglob("data/*.xyz")
@@ -62,7 +61,9 @@ def test_pnictogen():
         for xyz_file in example_xyz_files:
             input_prefix, xyz_file_extension = os.path.splitext(xyz_file)
 
-            mol = atoms.read_pybel(xyz_file)
+            mol = Atoms(
+                cclib.bridge.cclib2openbabel.readfile(xyz_file, xyz_file_extension[1:])
+            )
             written_files = pnictogen(mol, input_prefix, template, extension[1:])
 
             assert_equals(type(written_files), list)
@@ -74,7 +75,9 @@ def test_pnictogen():
 
     # Allow use of template in the parent directory
     with cd("pnictogen/repo"):
-        mol = atoms.read_pybel("../../data/water-dimer.xyz")
+        mol = Atoms(
+            cclib.bridge.cclib2openbabel.readfile("../../data/water-dimer.xyz", "xyz")
+        )
         written_files = pnictogen(mol, "../../data/water-dimer", "split.ADF.in", "in")
 
         assert_equals(
@@ -87,7 +90,7 @@ def test_pnictogen():
         )
 
     main(["-g", "/tmp/hello.world.ORCA.inp"])
-    mol = atoms.read_pybel("data/co.xyz")
+    mol = Atoms(cclib.bridge.cclib2openbabel.readfile("data/co.xyz", "xyz"))
     written_files = pnictogen(mol, "data/co", "/tmp/hello.world.ORCA.inp", foo="bar")
 
     assert_equals(written_files, ["data/co.inp"])
@@ -95,11 +98,33 @@ def test_pnictogen():
 
 def test_render_templates():
     """Test if templates are correctly rendered."""
-    water_mol = atoms.read_pybel("data/water.xyz")
+    water_mol = Atoms(cclib.bridge.cclib2openbabel.readfile("data/water.xyz", "xyz"))
+    if not water_mol.name:
+        water_mol.name = "data/water.xyz"
 
     main(["-g", "/tmp/foo.ADF.in"])
     main(["/tmp/foo.ADF.in", "data/water.xyz"])
-    assert_equals(open("data/water.in").read().strip(), water_mol.to_string("adf"))
+    assert_equals(
+        open("data/water.in").read().strip(),
+        """TITLE data/water.xyz
+
+CHARGE 0  0
+
+Number of atoms
+ 3
+
+ATOMS Cartesian
+O          0.0584027061        0.0584027059        0.0000000000
+H          1.0096135406       -0.0680162466        0.0000000000
+H         -0.0680162466        1.0096135407        0.0000000000
+End
+
+Basis
+End
+
+Geometry
+End""",
+    )
 
     main(["-g", "/tmp/test.GAMESS.inp"])
     main(["/tmp/test.GAMESS.inp", "data/water.xyz"])
@@ -110,9 +135,9 @@ def test_render_templates():
  $DATA
 data/water.xyz
 C1
-O      8.0      0.0584027061    0.0584027059    0.0000000000
-H      1.0      1.0096135406   -0.0680162466    0.0000000000
-H      1.0     -0.0680162466    1.0096135407    0.0000000000
+O      8.0        0.0584027061        0.0584027059        0.0000000000
+H      1.0        1.0096135406       -0.0680162466        0.0000000000
+H      1.0       -0.0680162466        1.0096135407        0.0000000000
  $END
 
 
@@ -132,9 +157,9 @@ H      1.0     -0.0680162466    1.0096135407    0.0000000000
  data/water.xyz
 
 0  1
-O          0.05840        0.05840        0.00000
-H          1.00961       -0.06802        0.00000
-H         -0.06802        1.00961        0.00000
+O          0.0584027061        0.0584027059        0.0000000000
+H          1.0096135406       -0.0680162466        0.0000000000
+H         -0.0680162466        1.0096135407        0.0000000000
 
 """,
     )
@@ -173,9 +198,9 @@ H  -0.06802 1  1.00961 1  0.00000 1
 title data/water.xyz
 
 geometry units angstroms print xyz autosym
-O          0.05840        0.05840        0.00000
-H          1.00961       -0.06802        0.00000
-H         -0.06802        1.00961        0.00000
+O          0.0584027061        0.0584027059        0.0000000000
+H          1.0096135406       -0.0680162466        0.0000000000
+H         -0.0680162466        1.0096135407        0.0000000000
 end
 """,
     )
@@ -188,9 +213,9 @@ end
 ! Opt
 
 * xyz 0 1
-O          0.05840        0.05840        0.00000
-H          1.00961       -0.06802        0.00000
-H         -0.06802        1.00961        0.00000
+O          0.0584027061        0.0584027059        0.0000000000
+H          1.0096135406       -0.0680162466        0.0000000000
+H         -0.0680162466        1.0096135407        0.0000000000
 *
 """,
     )
@@ -203,13 +228,14 @@ H         -0.06802        1.00961        0.00000
 
 molecule {
 0 1
-O          0.05840        0.05840        0.00000
-H          1.00961       -0.06802        0.00000
-H         -0.06802        1.00961        0.00000
+O          0.0584027061        0.0584027059        0.0000000000
+H          1.0096135406       -0.0680162466        0.0000000000
+H         -0.0680162466        1.0096135407        0.0000000000
 units angstrom
 }
 
-optimize('scf')""",
+optimize('scf')
+""",
     )
 
     main(["-g", "/tmp/example.QChem.in"])
@@ -323,7 +349,7 @@ H(2)       0.64083       -0.57862       -2.71449
 
 
 def test_read_with_cclib():
-    """Test if we can correctly read with cclib through pyrrole."""
+    """Test if we can correctly read with cclib."""
     main(["-g", "/tmp/fnord.Gaussian.gjf"])
     main(["/tmp/fnord.Gaussian.gjf", "data/benzene.out"])
     assert_equals(
@@ -333,18 +359,18 @@ def test_read_with_cclib():
  data/benzene.out
 
 0  1
-C          1.74589        1.79575       -1.05975
-C          0.94841        2.86897       -1.43112
-C          1.44805        1.07435        0.08765
-C         -0.14707        3.22061       -0.65525
-C          0.35257        1.42599        0.86352
-C         -0.44491        2.49921        0.49216
-H          2.59974        1.52031       -1.66517
-H          1.18103        3.43114       -2.32624
-H          2.07000        0.23754        0.37812
-H         -0.76902        4.05742       -0.94571
-H          0.11995        0.86382        1.75864
-H         -1.29876        2.77465        1.09757
+C          1.7458930000        1.7957530000       -1.0597530000
+C          0.9484120000        2.8689700000       -1.4311180000
+C          1.4480470000        1.0743490000        0.0876540000
+C         -0.1470660000        3.2206120000       -0.6552520000
+C          0.3525690000        1.4259910000        0.8635200000
+C         -0.4449120000        2.4992080000        0.4921550000
+H          2.5997410000        1.5203090000       -1.6651660000
+H          1.1810280000        3.4311430000       -2.3262420000
+H          2.0700040000        0.2375420000        0.3781170000
+H         -0.7690240000        4.0574200000       -0.9457150000
+H          0.1199530000        0.8638180000        1.7586440000
+H         -1.2987600000        2.7746520000        1.0975680000
 
 """,
     )
