@@ -14,13 +14,12 @@ from pyrrole import atoms
 __version__ = require(__name__)[0].version
 
 # This dict is set to globals prior to template renderization
-AVAILABLE_HELPERS = {
-    "np": np,
-}
+AVAILABLE_HELPERS = {"np": np}
 
-REPOSITORY = \
-    {os.path.splitext(name)[0]: resource_filename(__name__, "repo/" + name)
-     for name in resource_listdir(__name__, "repo")}
+REPOSITORY = {
+    os.path.splitext(name)[0]: resource_filename(__name__, "repo/" + name)
+    for name in resource_listdir(__name__, "repo")
+}
 
 
 def argparser():
@@ -49,26 +48,37 @@ def argparser():
     parser = argparse.ArgumentParser(
         description="input generation for computational chemistry packages",
         epilog="""%(prog)s is licensed under the MIT License
-        <https://github.com/dudektria/%(prog)s>""")
+        <https://github.com/dudektria/%(prog)s>""",
+    )
 
     parser.add_argument(
-        "-g", "--generate", action="store_true",
-        help="create a simple boilerplate input template for you to modify")
+        "-g",
+        "--generate",
+        action="store_true",
+        help="create a simple boilerplate input template for you to modify",
+    )
     parser.add_argument(
-        "-v", "--version",
-        action="version", version="%(prog)s {:s}".format(__version__))
+        "-v", "--version", action="version", version="%(prog)s {:s}".format(__version__)
+    )
 
     parser.add_argument(
-        "template", metavar="template.package.ext | template.ext",
+        "template",
+        metavar="template.package.ext | template.ext",
         help="""template file.
         "ext" can be anything.
         "package" might be one of the following:
-        {}.""".format(", ".join(REPOSITORY.keys())))
+        {}.""".format(
+            ", ".join(REPOSITORY.keys())
+        ),
+    )
     parser.add_argument(
-        "descriptors", metavar="descriptor.ext", nargs="*",
+        "descriptors",
+        metavar="descriptor.ext",
+        nargs="*",
         help="""files describing molecules, which are read using Open Babel
         (run "$ obabel -L formats" for a list of all available file
-        formats).""")
+        formats).""",
+    )
 
     return parser
 
@@ -114,19 +124,27 @@ def main(argv=sys.argv[1:]):
 
             try:
                 molecule = atoms.read_cclib(descriptor)
-                written_files = pnictogen(molecule, input_prefix,
-                                          args.template, extension)
+                written_files = pnictogen(
+                    molecule, input_prefix, args.template, extension
+                )
             except KeyError:
                 molecule = atoms.read_pybel(descriptor)
-                written_files = pnictogen(molecule, input_prefix,
-                                          args.template, extension)
+                written_files = pnictogen(
+                    molecule, input_prefix, args.template, extension
+                )
 
             for written_file in written_files:
                 print("{:s} written".format(written_file))
 
 
-def pnictogen(molecule, input_prefix, template, extension=None,
-              globals=AVAILABLE_HELPERS, **kwargs):
+def pnictogen(
+    molecule,
+    input_prefix,
+    template,
+    extension=None,
+    globals=AVAILABLE_HELPERS,
+    **kwargs
+):
     """
     Generate inputs based on a template and a collection of atoms.
 
@@ -170,12 +188,16 @@ def pnictogen(molecule, input_prefix, template, extension=None,
 
     written_files = []
 
-    raw_rendered = render_template(template, input_prefix=input_prefix,
-                                   molecule=molecule, globals=globals,
-                                   **kwargs)
+    raw_rendered = render_template(
+        template,
+        input_prefix=input_prefix,
+        molecule=molecule,
+        globals=globals,
+        **kwargs
+    )
 
     at_id = None
-    raw_rendered = raw_rendered.split('--@')
+    raw_rendered = raw_rendered.split("--@")
     for rendered in raw_rendered:
         if at_id is None:
             at_id = ""
@@ -236,13 +258,11 @@ def render_template(template, **kwargs):
     $end
 
     """
-    extensions = kwargs.pop('extensions', [])
-    globals = kwargs.pop('globals', {})
+    extensions = kwargs.pop("extensions", [])
+    globals = kwargs.pop("globals", {})
 
     jinja_env = Environment(
-        loader=FileSystemLoader("./"),
-        extensions=extensions,
-        trim_blocks=True,
+        loader=FileSystemLoader("./"), extensions=extensions, trim_blocks=True
     )
     jinja_env.globals.update(globals)
 
