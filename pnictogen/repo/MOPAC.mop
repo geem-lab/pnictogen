@@ -1,5 +1,5 @@
 CHARGE={{ molecule.charge }} MS={{ (molecule.mult - 1)/2 }}
 {{ molecule.name }}
 
-{{ molecule.to_string("mop") }}
+{{ "\n".join(molecule.to_string("mop").split("\n")[3:]) }}
 
