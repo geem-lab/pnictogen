@@ -51,7 +51,7 @@ def test_main():
 
     # Allow use of template in the parent directory
     with cd("data"):
-        main(["../pnictogen/repo/split.ADF.in", "water-dimer.xyz"])
+        main(["../pnictogen/repo/ADF.in", "water-dimer.xyz"])
 
 
 def test_pnictogen():
@@ -78,14 +78,12 @@ def test_pnictogen():
         mol = Atoms(
             cclib.bridge.cclib2openbabel.readfile("../../data/water-dimer.xyz", "xyz")
         )
-        written_files = pnictogen(mol, "../../data/water-dimer", "split.ADF.in", "in")
+        written_files = pnictogen(mol, "../../data/water-dimer", "ADF.in", "in")
 
         assert_equals(
             written_files,
             [
-                "../../data/water-dimer_eda.in",
-                "../../data/water-dimer_f1.in",
-                "../../data/water-dimer_f2.in",
+                "../../data/water-dimer.in",
             ],
         )
 

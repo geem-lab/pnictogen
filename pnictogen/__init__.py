@@ -46,6 +46,8 @@ class Atoms:
         else:
             self.atomcoords = [self._data.atomcoords]
 
+        self.atomnos = self._data.atomnos
+
         try:
             self.charge = self._data.charge
         except AttributeError:

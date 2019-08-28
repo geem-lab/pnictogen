@@ -1,3 +1,5 @@
+{% set pyrrole = import("pyrrole") %}
+{% set molecule = pyrrole.atoms.Atoms(molecule) %}
 {% set frags = molecule.split() %}
 --@eda
 TITLE {{ molecule.name }} eda
