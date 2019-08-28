@@ -245,7 +245,7 @@ optimize('scf')
     assert_equals(open("data/water.input").read(), water_mol.to_string("zin"))
 
 
-def test_example_eda_adf():
+def _test_example_eda_adf():
     """Test example for EDA in ADF."""
     main(["pnictogen/repo/split.ADF.in", "data/water-dimer.xyz"])
     assert_equals(
@@ -327,7 +327,7 @@ End
     )
 
 
-def test_example_fragments_orca():
+def _test_example_fragments_orca():
     """Test if fragmentation works with ORCA inputs."""
     main(["pnictogen/repo/split.ORCA.inp", "data/water-dimer.xyz"])
     assert_equals(
