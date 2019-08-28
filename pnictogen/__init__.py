@@ -127,7 +127,7 @@ def argparser():
     parser = argparse.ArgumentParser(
         description="input generation for computational chemistry packages",
         epilog="""%(prog)s is licensed under the MIT License
-        <https://github.com/dudektria/%(prog)s>""",
+        <https://github.com/schneiderfelipe/%(prog)s>""",
     )
 
     parser.add_argument(

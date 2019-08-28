@@ -12,7 +12,7 @@ this_directory = os.path.abspath(os.path.dirname(__file__))
 version_file = open(os.path.join(this_directory, "VERSION"))
 version = version_file.read().strip()
 
-url = "https://github.com/dudektria/pnictogen"
+url = "https://github.com/schneiderfelipe/pnictogen"
 download_url = "{:s}/archive/{:s}.tar.gz".format(url, version)
 
 with open(os.path.join(this_directory, "README.rst")) as f:
