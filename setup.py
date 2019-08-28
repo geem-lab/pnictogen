@@ -33,7 +33,6 @@ setup(
     long_description=long_description,
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 2",
         "Programming Language :: Python",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
