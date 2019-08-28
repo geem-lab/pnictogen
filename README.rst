@@ -36,11 +36,7 @@ It is based on Jinja2_, a modern and friendly templating language for Python:
     H         -0.06802        1.00961        0.00000
     *
 
-pnictogen is the big brother of nitrogen_, hence the
-`name <https://en.wikipedia.org/wiki/Pnictogen>`_.
-
 .. _pnictogen: https://github.com/schneiderfelipe/pnictogen
-.. _nitrogen: https://github.com/chemical-scripts/nitrogen
 .. _Jinja2: http://jinja.pocoo.org/docs/latest/
 
 Installation
