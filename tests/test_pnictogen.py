@@ -80,12 +80,7 @@ def test_pnictogen():
         )
         written_files = pnictogen(mol, "../../data/water-dimer", "ADF.in", "in")
 
-        assert_equals(
-            written_files,
-            [
-                "../../data/water-dimer.in",
-            ],
-        )
+        assert_equals(written_files, ["../../data/water-dimer.in"])
 
     main(["-g", "/tmp/hello.world.ORCA.inp"])
     mol = Atoms(cclib.bridge.cclib2openbabel.readfile("data/co.xyz", "xyz"))
